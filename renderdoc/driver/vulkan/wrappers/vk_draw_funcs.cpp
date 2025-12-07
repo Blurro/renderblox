@@ -3298,7 +3298,7 @@ bool WrappedVulkan::Serialise_vkCmdDrawIndexedIndirectCount(
 
               // draw from our custom buffer
               m_IndirectDraw = true;
-              unwrappedBuffer = m_IndirectBuffer.UnwrappedBuffer();
+              buffer = m_IndirectBuffer.UnwrappedBuffer();
               offset = 0;
               count = drawidx + 1;
               stride = sizeof(VkDrawIndexedIndirectCommand);

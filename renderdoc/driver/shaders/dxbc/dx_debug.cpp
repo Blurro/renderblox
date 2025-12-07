@@ -218,7 +218,7 @@ void GatherInputDataForInitialValues(const DXBC::DXBCContainer *dxbc, InputFetch
 
     int arrayLength = 0;
 
-    if(included && numCols <= 3 && (sig.regChannelMask & 0x1))
+    if(included && numCols <= 2 && (sig.regChannelMask & 0x1))
     {
       uint32_t nextIdx = sig.semanticIndex + 1;
 
@@ -288,7 +288,7 @@ void GatherInputDataForInitialValues(const DXBC::DXBCContainer *dxbc, InputFetch
     // To prevent this, we look forward and backward to check that we aren't expecting to pack
     // with anything, and if not then we just make it a 1-length array to ensure no packing.
     // Note the regChannelMask & 0x1 means it is using .x, so it's not the tail-end of a pack
-    if(included && arrayLength == 0 && numCols <= 3 && (sig.regChannelMask & 0x1))
+    if(included && arrayLength == 0 && numCols <= 2 && (sig.regChannelMask & 0x1))
     {
       if(i == numInputs - 1)
       {

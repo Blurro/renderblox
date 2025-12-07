@@ -547,13 +547,6 @@ enum class ThreadScope : uint32_t
 
 BITMASK_OPERATORS(ThreadScope);
 
-enum class ComputeDerivativeMode : uint8_t
-{
-  None,
-  Linear,
-  Quad,
-};
-
 class Processor
 {
 public:

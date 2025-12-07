@@ -1043,13 +1043,6 @@ protected:
     }
   }
 
-  void Detach()
-  {
-    PopulateAllChildren();
-    for(size_t i = 0; i < data.children.size(); i++)
-      data.children[i]->Detach();
-  }
-
   void PopulateAllChildren() const
   {
     if(m_Lazy)
@@ -1093,9 +1086,6 @@ private:
   friend void DoSerialise(SerialiserType &ser, SDChunk &el);
   template <class SerialiserType>
   friend void DoSerialise(SerialiserType &ser, SDObject &el, StructuredObjectList &children);
-
-  // SDFile should be a friend so it can detach
-  friend struct SDFile;
 
   void DeleteLazyGenerator() const
   {
@@ -1661,15 +1651,6 @@ public:
     chunks.swap(other.chunks);
     buffers.swap(other.buffers);
     std::swap(version, other.version);
-  }
-
-  DOCUMENT(R"(Prepares the SDFile to remove any possible dependencies on what
-created it.
-)");
-  void Detach()
-  {
-    for(SDChunk *c : chunks)
-      c->Detach();
   }
 
 protected:

@@ -702,14 +702,9 @@ void WrappedID3D12PipelineState::FetchRootSig(D3D12ShaderCache *shaderCache)
 {
   if(compute)
   {
-    if(compute->GetRootSigBlob().SerializedBlobSizeInBytes > 0)
+    if(compute->pRootSignature)
     {
-      usedSig = DecodeRootSig(compute->GetRootSigBlob().pSerializedBlob,
-                              compute->GetRootSigBlob().SerializedBlobSizeInBytes);
-    }
-    else if(compute->GetRootSigIfPresent())
-    {
-      usedSig = ((WrappedID3D12RootSignature *)compute->GetRootSigIfPresent())->sig;
+      usedSig = ((WrappedID3D12RootSignature *)compute->pRootSignature)->sig;
     }
     else
     {
@@ -726,14 +721,9 @@ void WrappedID3D12PipelineState::FetchRootSig(D3D12ShaderCache *shaderCache)
   }
   else if(graphics)
   {
-    if(graphics->GetRootSigBlob().SerializedBlobSizeInBytes > 0)
+    if(graphics->pRootSignature)
     {
-      usedSig = DecodeRootSig(graphics->GetRootSigBlob().pSerializedBlob,
-                              graphics->GetRootSigBlob().SerializedBlobSizeInBytes);
-    }
-    else if(graphics->GetRootSigIfPresent())
-    {
-      usedSig = ((WrappedID3D12RootSignature *)graphics->GetRootSigIfPresent())->sig;
+      usedSig = ((WrappedID3D12RootSignature *)graphics->pRootSignature)->sig;
     }
     else
     {
@@ -891,7 +881,7 @@ void D3D12ShaderExportDatabase::PopulateDatabase(size_t NumSubobjects,
                                                  const D3D12_STATE_SUBOBJECT *subobjects)
 {
   // store the default local root signature - if we only find one in the whole state object then it becomes default
-  uint32_t defaultRoot = ~0U;
+  ID3D12RootSignature *defaultRoot = NULL;
   bool unassocDefaultValid = false;
   bool explicitDefault = false;
   bool unassocDXILDefaultValid = false;
@@ -1061,25 +1051,8 @@ void D3D12ShaderExportDatabase::PopulateDatabase(size_t NumSubobjects,
       if(!explicitDefault)
       {
         // if multiple root signatures are defined, then there can't be an unspecified default
-        unassocDefaultValid = (defaultRoot == ~0U);
-        WrappedID3D12RootSignature *wrappedRoot =
-            (WrappedID3D12RootSignature *)((D3D12_LOCAL_ROOT_SIGNATURE *)subobjects[i].pDesc)
-                ->pLocalRootSignature;
-
-        defaultRoot = wrappedRoot->localRootSigIdx;
-      }
-    }
-    else if(subobjects[i].Type == D3D12_STATE_SUBOBJECT_TYPE_LOCAL_SERIALIZED_ROOT_SIGNATURE)
-    {
-      // ignore these if an explicit default association has been made
-      if(!explicitDefault)
-      {
-        // if multiple root signatures are defined, then there can't be an unspecified default
-        unassocDefaultValid = (defaultRoot == ~0U);
-        D3D12_SERIALIZED_ROOT_SIGNATURE_DESC &RootDesc =
-            ((D3D12_LOCAL_SERIALIZED_ROOT_SIGNATURE *)subobjects[i].pDesc)->Desc;
-        defaultRoot = m_RayManager->RegisterLocalRootSig(
-            DecodeRootSig(RootDesc.pSerializedBlob, RootDesc.SerializedBlobSizeInBytes));
+        unassocDefaultValid = defaultRoot == NULL;
+        defaultRoot = ((D3D12_LOCAL_ROOT_SIGNATURE *)subobjects[i].pDesc)->pLocalRootSignature;
       }
     }
     else if(subobjects[i].Type == D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION)
@@ -1090,40 +1063,26 @@ void D3D12ShaderExportDatabase::PopulateDatabase(size_t NumSubobjects,
       const D3D12_STATE_SUBOBJECT *other = assoc->pSubobjectToAssociate;
 
       // only care about associating local root signatures
-      if(other->Type == D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE ||
-         other->Type == D3D12_STATE_SUBOBJECT_TYPE_LOCAL_SERIALIZED_ROOT_SIGNATURE)
+      if(other->Type == D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE)
       {
-        uint32_t localRSIdx = ~0U;
+        ID3D12RootSignature *root = ((D3D12_LOCAL_ROOT_SIGNATURE *)other->pDesc)->pLocalRootSignature;
 
-        if(other->Type == D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE)
-        {
-          ID3D12RootSignature *root =
-              ((D3D12_LOCAL_ROOT_SIGNATURE *)other->pDesc)->pLocalRootSignature;
-
-          WrappedID3D12RootSignature *wrappedRoot = (WrappedID3D12RootSignature *)root;
-          localRSIdx = wrappedRoot->localRootSigIdx;
-        }
-        else if(other->Type == D3D12_STATE_SUBOBJECT_TYPE_LOCAL_SERIALIZED_ROOT_SIGNATURE)
-        {
-          D3D12_SERIALIZED_ROOT_SIGNATURE_DESC &RootDesc =
-              ((D3D12_LOCAL_SERIALIZED_ROOT_SIGNATURE *)other->pDesc)->Desc;
-          localRSIdx = m_RayManager->RegisterLocalRootSig(
-              DecodeRootSig(RootDesc.pSerializedBlob, RootDesc.SerializedBlobSizeInBytes));
-        }
+        WrappedID3D12RootSignature *wrappedRoot = (WrappedID3D12RootSignature *)root;
 
         // if there are no exports this is an explicit default association. We assume this
         // matches and doesn't conflict
         if(assoc->NumExports == NULL)
         {
           explicitDefault = true;
-          defaultRoot = localRSIdx;
+          defaultRoot = root;
         }
         else
         {
           // otherwise record the explicit associations - these may refer to exports that
           // haven't been seen yet so we record them locally
           for(UINT e = 0; e < assoc->NumExports; e++)
-            explicitRootSigAssocs.push_back({StringFormat::Wide2UTF8(assoc->pExports[e]), localRSIdx});
+            explicitRootSigAssocs.push_back(
+                {StringFormat::Wide2UTF8(assoc->pExports[e]), wrappedRoot->localRootSigIdx});
         }
       }
     }
@@ -1164,12 +1123,16 @@ void D3D12ShaderExportDatabase::PopulateDatabase(size_t NumSubobjects,
 
   if(explicitDefault)
   {
-    ApplyDefaultRoot(SubObjectPriority::CodeExplicitDefault, defaultRoot);
+    WrappedID3D12RootSignature *wrappedRoot = (WrappedID3D12RootSignature *)defaultRoot;
+
+    ApplyDefaultRoot(SubObjectPriority::CodeExplicitDefault, wrappedRoot->localRootSigIdx);
   }
   // shouldn't be possible to have both explicit and implicit defaults?
   else if(unassocDefaultValid)
   {
-    ApplyDefaultRoot(SubObjectPriority::CodeImplicitDefault, defaultRoot);
+    WrappedID3D12RootSignature *wrappedRoot = (WrappedID3D12RootSignature *)defaultRoot;
+
+    ApplyDefaultRoot(SubObjectPriority::CodeImplicitDefault, wrappedRoot->localRootSigIdx);
   }
 
   for(size_t i = 0; i < explicitDxilAssocs.size(); i++)

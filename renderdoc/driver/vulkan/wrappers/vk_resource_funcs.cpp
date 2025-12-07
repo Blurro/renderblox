@@ -715,38 +715,11 @@ VkResult WrappedVulkan::vkAllocateMemory(VkDevice device, const VkMemoryAllocate
       }
       else
       {
+        // can't create a memory-spanning buffer for this allocation. Assume this is a case where
+        // this memory type is only available to images and is not mappable - in which case the
+        // whole memory buffer won't be needed so we can skip this.
         ObjDisp(device)->DestroyBuffer(Unwrap(device), wholeMemBuf, NULL);
         wholeMemBuf = VK_NULL_HANDLE;
-
-        // can't create a memory-spanning buffer for this allocation. Try again with descriptor
-        // buffers if that is enabled as those memory types are sometimes unique.
-        if(DescriptorBuffers())
-        {
-          bufInfo.usage |= VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT;
-
-          ret = ObjDisp(device)->CreateBuffer(Unwrap(device), &bufInfo, NULL, &wholeMemBuf);
-          RDCASSERTEQUAL(ret, VK_SUCCESS);
-
-          ObjDisp(device)->GetBufferMemoryRequirements(Unwrap(device), wholeMemBuf, &mrq);
-
-          RDCASSERTEQUAL(mrq.size, info.allocationSize);
-
-          if((mrq.memoryTypeBits & (1U << info.memoryTypeIndex)) != 0)
-          {
-            bufid = GetResourceManager()->WrapResource(Unwrap(device), wholeMemBuf);
-
-            ObjDisp(device)->BindBufferMemory(Unwrap(device), Unwrap(wholeMemBuf), Unwrap(*pMemory),
-                                              0);
-          }
-          else
-          {
-            ObjDisp(device)->DestroyBuffer(Unwrap(device), wholeMemBuf, NULL);
-            wholeMemBuf = VK_NULL_HANDLE;
-          }
-        }
-
-        // Otherwise this could be a case where this memory type is only available to images and is
-        // not mappable - in which case the whole memory buffer shouldn't be needed so we can skip this.
       }
     }
 

@@ -417,13 +417,11 @@ public:
   {
     rdcarray<IID> allowedIIDs;
 
-    // allow enabling unsigned DXIL, and GPU upload heaps on most windows versions
+    // allow enabling unsigned DXIL.
     for(UINT i = 0; i < NumFeatures; i++)
     {
       if(pIIDs[i] == D3D12ExperimentalShaderModels)
         allowedIIDs.push_back(D3D12ExperimentalShaderModels);
-      else if(pIIDs[i] == D3D12GPUUploadHeapsOnUnsupportedOS)
-        allowedIIDs.push_back(D3D12GPUUploadHeapsOnUnsupportedOS);
     }
 
     // there's no "partially successful" error code, so we just lie to the application and pretend
@@ -915,13 +913,11 @@ private:
   {
     rdcarray<IID> allowedIIDs;
 
-    // allow enabling unsigned DXIL, and GPU upload heaps on most windows versions
+    // allow enabling unsigned DXIL.
     for(UINT i = 0; i < NumFeatures; i++)
     {
       if(pIIDs[i] == D3D12ExperimentalShaderModels)
         allowedIIDs.push_back(D3D12ExperimentalShaderModels);
-      else if(pIIDs[i] == D3D12GPUUploadHeapsOnUnsupportedOS)
-        allowedIIDs.push_back(D3D12GPUUploadHeapsOnUnsupportedOS);
     }
 
     // there's no "partially successful" error code, so we just lie to the application and pretend
@@ -946,12 +942,6 @@ private:
 
   static HRESULT WINAPI D3D12GetDebugInterface_hook(REFIID riid, void **ppvDebug)
   {
-    if(riid == CLSID_D3D12StateObjectFactory)
-    {
-      RDCLOG("Deliberately reporting no support for state object factories");
-      return E_NOINTERFACE;
-    }
-
     IUnknown *realUnk = NULL;
     HRESULT real = d3d12hooks.GetDebugInterface()(riid, (void **)&realUnk);
 
@@ -971,12 +961,6 @@ private:
 
   static HRESULT WINAPI D3D12GetInterface_hook(REFCLSID rclsid, REFIID riid, void **ppvDebug)
   {
-    if(riid == CLSID_D3D12StateObjectFactory)
-    {
-      RDCLOG("Deliberately reporting no support for state object factories");
-      return E_NOINTERFACE;
-    }
-
     IUnknown *realUnk = NULL;
     HRESULT real = d3d12hooks.GetInterface()(rclsid, riid, (void **)&realUnk);
 

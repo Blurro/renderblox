@@ -51,17 +51,9 @@ HRESULT STDMETHODCALLTYPE WrappedID3D11VideoDevice2::QueryInterface(REFIID riid,
   }
   else if(riid == __uuidof(ID3D11VideoDevice))
   {
-    if(m_pReal)
-    {
-      *ppvObject = (ID3D11VideoDevice *)this;
-      AddRef();
-      return S_OK;
-    }
-    else
-    {
-      *ppvObject = NULL;
-      return E_NOINTERFACE;
-    }
+    *ppvObject = (ID3D11VideoDevice *)this;
+    AddRef();
+    return S_OK;
   }
   else if(riid == __uuidof(ID3D11VideoDevice1))
   {

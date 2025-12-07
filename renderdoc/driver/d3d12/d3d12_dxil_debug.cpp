@@ -37,12 +37,12 @@
 using namespace DXIL;
 using namespace DXILDebug;
 
-#if ENABLED(RDOC_RELEASE)
+#if defined(RELEASE)
 #define CHECK_DEVICE_THREAD()
 #else
 #define CHECK_DEVICE_THREAD() \
   RDCASSERTMSG("API Wrapper function called from non-device thread!", IsDeviceThread());
-#endif    // #if ENABLED(RDOC_RELEASE)
+#endif    // #if defined(RELEASE)
 
 namespace DXILDebug
 {
@@ -642,20 +642,17 @@ D3D12APIWrapper::D3D12APIWrapper(WrappedID3D12Device *device, const DXIL::Progra
           v.members[r].type = v.type;
           v.members[r].name = StringFormat::Fmt("[%u]", r);
         }
-        v.rows = 0;
-        v.columns = 0;
-        v.type = VarType::Struct;
       }
 
-      if(v.rows == 1)
+      SourceVariableMapping inputMapping;
+      inputMapping.name = v.name;
+      inputMapping.type = v.type;
+      inputMapping.rows = sig.rows;
+      inputMapping.columns = sig.cols;
+      inputMapping.variables.reserve(sig.cols);
+      inputMapping.signatureIndex = i;
+      if(v.rows <= 1)
       {
-        SourceVariableMapping inputMapping;
-        inputMapping.name = v.name;
-        inputMapping.type = v.type;
-        inputMapping.rows = sig.rows;
-        inputMapping.columns = sig.cols;
-        inputMapping.variables.reserve(sig.cols);
-        inputMapping.signatureIndex = i;
         inputMapping.variables.reserve(sig.cols);
         for(uint32_t c = 0; c < sig.cols; ++c)
         {
@@ -665,30 +662,15 @@ D3D12APIWrapper::D3D12APIWrapper(WrappedID3D12Device *device, const DXIL::Progra
           ref.component = c;
           inputMapping.variables.push_back(ref);
         }
-        m_SourceVars.push_back(inputMapping);
       }
       else
       {
-        // Make a mapping per element
-        for(const ShaderVariable &member : v.members)
-        {
-          SourceVariableMapping inputMapping;
-          inputMapping.name = v.name + member.name;
-          inputMapping.type = member.type;
-          inputMapping.rows = 1;
-          inputMapping.columns = member.columns;
-          inputMapping.signatureIndex = -1;
-          for(uint32_t c = 0; c < member.columns; ++c)
-          {
-            DebugVariableReference ref;
-            ref.type = DebugVariableType::Input;
-            ref.name = inStruct.name + "." + v.name + member.name;
-            ref.component = c;
-            inputMapping.variables.push_back(ref);
-          }
-          m_SourceVars.push_back(inputMapping);
-        }
+        DebugVariableReference ref;
+        ref.type = DebugVariableType::Input;
+        ref.name = inStruct.name + "." + v.name;
+        inputMapping.variables.push_back(ref);
       }
+      m_SourceVars.push_back(inputMapping);
     }
 
     // Make a single source variable mapping for the whole input struct
@@ -1341,6 +1323,7 @@ UAVInfo D3D12APIWrapper::FetchUAV(const D3D12Descriptor *resDescriptor, const Bi
 
     if(pResource)
     {
+      // TODO: Need to fetch counter resource if applicable
       D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = resDescriptor->GetUAV();
 
       if(uavDesc.ViewDimension == D3D12_UAV_DIMENSION_UNKNOWN)
@@ -1364,30 +1347,6 @@ UAVInfo D3D12APIWrapper::FetchUAV(const D3D12Descriptor *resDescriptor, const Bi
           uavData.resInfo.format.stride = mdStride;
 
         m_Device->GetDebugManager()->GetBufferData(pResource, 0, 0, data);
-
-        ResourceId counterId = resDescriptor->GetCounterResourceId();
-        if(counterId != ResourceId())
-        {
-          uint64_t counterByteOffset = uavDesc.Buffer.CounterOffsetInBytes;
-          ID3D12Resource *pCounterResource = rm->GetCurrentAs<ID3D12Resource>(counterId);
-          if(pCounterResource)
-          {
-            bytebuf counterData;
-            m_Device->GetDebugManager()->GetBufferData(pCounterResource, counterByteOffset, 4,
-                                                       counterData);
-            // Initialise the UAV counter from the buffer
-            if(counterData.size() == 4)
-              uavData.hiddenCounter = *((uint32_t *)counterData.data());
-            else
-              RDCERR("Couldn't read UAV counter data for UAV in slot %u space %u",
-                     slot.shaderRegister, slot.registerSpace);
-          }
-          else
-          {
-            RDCERR("NULL counter resource for UAV in slot %u space %u", slot.shaderRegister,
-                   slot.registerSpace);
-          }
-        }
       }
       else
       {

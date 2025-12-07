@@ -2698,10 +2698,8 @@ void VulkanDebugManager::FillWithDiscardPatternOnHost(VkDevice device, DiscardTy
   }
 }
 
-VulkanDebugManager::ReadbackWindow VulkanDebugManager::LockReadbackBuffer(VkDeviceSize sz)
+void VulkanDebugManager::InitReadbackBuffer(VkDeviceSize sz)
 {
-  m_ReadbackLock.Lock();
-
   if(m_ReadbackWindow.TotalSize() < sz)
   {
     if(m_ReadbackWindow.TotalSize() > 0)
@@ -2724,13 +2722,6 @@ VulkanDebugManager::ReadbackWindow VulkanDebugManager::LockReadbackBuffer(VkDevi
       CHECK_VKR(m_pDriver, VK_ERROR_MEMORY_MAP_FAILED);
     }
   }
-
-  return {m_ReadbackWindow.UnwrappedBuffer(), m_ReadbackWindow.UnwrappedMemory(), m_ReadbackPtr};
-}
-
-void VulkanDebugManager::UnlockReadbackBuffer()
-{
-  m_ReadbackLock.Unlock();
 }
 
 void VulkanReplay::AllocAndAddReservedDescriptors(

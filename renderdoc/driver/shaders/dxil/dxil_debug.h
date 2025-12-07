@@ -34,7 +34,7 @@
 #include "dxil_controlflow.h"
 #include "dxil_debuginfo.h"
 
-#if ENABLED(RDOC_RELEASE)
+#if defined(RELEASE)
 #define DXIL_DEBUG_RDCASSERT(...) \
   do                              \
   {                               \
@@ -177,12 +177,7 @@ struct GlobalConstant
 
 struct ResourceReferenceInfo
 {
-  ResourceReferenceInfo()
-      : resClass(DXIL::ResourceClass::Invalid),
-        varType(VarType::Unknown),
-        descType(DescriptorType::Unknown)
-  {
-  }
+  ResourceReferenceInfo() : resClass(DXIL::ResourceClass::Invalid) {}
   void Create(const DXIL::ResourceReference *resRef, uint32_t arrayIndex);
   bool Valid() const { return resClass != DXIL::ResourceClass::Invalid; }
 
@@ -452,7 +447,6 @@ struct ThreadState
   bool CanRunAnotherStep() const;
   const ShaderVariable &GetInput() const { return m_Input; }
   const GlobalVariable &GetOutput() const { return m_Output; }
-  const BuiltinInputs &GetBuiltins() const { return m_Builtins; }
   bool IsDead() const { return m_Dead; }
   uint32_t GetQuadId() const { return m_QuadId; }
   uint32_t GetQuadLaneIndex() const { return m_QuadLaneIndex; }

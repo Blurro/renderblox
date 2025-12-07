@@ -26,8 +26,10 @@
 
 #include <QFrame>
 #include <QMutex>
+#include <memory>
 #include "Code/Interface/QRDInterface.h"
 #include "Code/QRDUtils.h"
+#include <QTableView>
 
 namespace Ui
 {
@@ -91,6 +93,16 @@ class BufferViewer : public QFrame, public IBufferViewer, public ICaptureViewer
   Q_PROPERTY(QVariant persistData READ persistData WRITE setPersistData DESIGNABLE false SCRIPTABLE false)
 
 public:
+  void exportDataCustom(const QString &basePath, std::shared_ptr<int> exportIdxPtr, int totalEids,
+                        std::function<void()> done);
+
+ void SelectSiblingAndDumpVSPositions(const QModelIndex &refIdx, uint32_t referenceEID, int instanceCount);
+
+void exportData(
+      const BufferExport &params, const QString &forcedName = QString(),
+      std::shared_ptr<int> exportIdxPtr = std::make_shared<int>(0), int totalEids = 1,
+      std::function<void()> done = []() {}, QTableView *overrideView = nullptr);
+
   explicit BufferViewer(ICaptureContext &ctx, bool meshview, QWidget *parent = 0);
   ~BufferViewer();
 
@@ -120,6 +132,7 @@ public:
   void setPersistData(const QVariant &persistData);
 
 private slots:
+
   // automatic slots
   void on_outputTabs_currentChanged(int index);
   void on_resetCamera_clicked();
@@ -163,7 +176,6 @@ private slots:
   void processFormat(const QString &format);
 
   void updateExportActionNames();
-  void exportData(const BufferExport &params);
   void debugVertex();
   void debugMeshThread();
   void meshDebugSelector_beginDebug(const rdcfixedarray<uint32_t, 3> &group,
@@ -171,6 +183,9 @@ private slots:
   void fixedVars_contextMenu(const QPoint &pos);
 
 private:
+  // void MyCoolFunction(const QString &filename);
+  // QString m_exportPath;
+
   bool eventFilter(QObject *watched, QEvent *event) override;
   Ui::BufferViewer *ui;
   ICaptureContext &m_Ctx;

@@ -281,7 +281,7 @@ void AssignValue(ShaderVariable &dst, const ShaderVariable &src)
     AssignValue(dst.members[i], src.members[i]);
 }
 
-#if ENABLED(RDOC_RELEASE)
+#if defined(RELEASE)
 #define CHECK_DEBUGGER_THREAD() \
   do                            \
   {                             \
@@ -289,7 +289,7 @@ void AssignValue(ShaderVariable &dst, const ShaderVariable &src)
 #else
 #define CHECK_DEBUGGER_THREAD() \
   RDCASSERTMSG("Debugger function called from non-device thread!", IsDeviceThread());
-#endif    // #if ENABLED(RDOC_RELEASE)
+#endif    // #if defined(RELEASE)
 
 Debugger::Debugger() : deviceThreadID(Threading::GetCurrentID())
 {
@@ -446,9 +446,16 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       "SPV_KHR_16bit_storage",
       "SPV_KHR_8bit_storage",
       "SPV_KHR_bit_instructions",
+      // SPV_KHR_compute_shader_derivatives
+      // SPV_KHR_cooperative_matrix
       "SPV_KHR_device_group",
       "SPV_KHR_expect_assume",
       "SPV_KHR_float_controls",
+      // SPV_KHR_float_controls2
+      // SPV_KHR_fragment_shader_barycentric
+      // SPV_KHR_fragment_shading_rate
+      // SPV_KHR_integer_dot_product
+      // SPV_KHR_linkonce_odr  - kernel only
       "SPV_KHR_maximal_reconvergence",
       "SPV_KHR_multiview",
       "SPV_KHR_no_integer_wrap_decoration",
@@ -456,6 +463,10 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       "SPV_KHR_physical_storage_buffer",
       "SPV_KHR_post_depth_coverage",
       "SPV_KHR_quad_control",
+      // SPV_KHR_ray_cull_mask
+      // SPV_KHR_ray_query
+      // SPV_KHR_ray_tracing
+      // SPV_KHR_ray_tracing_position_fetch
       "SPV_KHR_relaxed_extended_instruction",
       "SPV_KHR_shader_atomic_counter_ops",
       "SPV_KHR_shader_ballot",
@@ -466,28 +477,39 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       "SPV_KHR_subgroup_uniform_control_flow",
       "SPV_KHR_subgroup_vote",
       "SPV_KHR_terminate_invocation",
+      // SPV_KHR_uniform_group_instructions - kernel?
+      // SPV_KHR_untyped_pointers - kernel
+      // SPV_KHR_variable_pointers
       "SPV_KHR_vulkan_memory_model",
-      "SPV_KHR_compute_shader_derivatives",
+      // SPV_KHR_workgroup_memory_explicit_layout
 
       // EXT extensions
+      // SPV_EXT_arithmetic_fence - kernel?
       "SPV_EXT_demote_to_helper_invocation",
       "SPV_EXT_descriptor_indexing",
       "SPV_EXT_fragment_fully_covered",
       "SPV_EXT_fragment_invocation_density",
+      // SPV_EXT_fragment_shader_interlock
+      // SPV_EXT_image_raw10_raw12 - kernel?
       "SPV_EXT_mesh_shader",
+      // SPV_EXT_opacity_micromap
+      // SPV_EXT_optnone - kernel?
       "SPV_EXT_physical_storage_buffer",
+      // SPV_EXT_relaxed_printf_string_address_space - kernel
+      // SPV_EXT_replicated_composites
       "SPV_EXT_shader_atomic_float_add",
-      "SPV_EXT_shader_atomic_float_min_max",
-      "SPV_EXT_shader_atomic_float16_add",
+      // SPV_EXT_shader_atomic_float_min_max
+      // SPV_EXT_shader_atomic_float16_add
       "SPV_EXT_shader_image_int64",
       "SPV_EXT_shader_stencil_export",
+      // SPV_EXT_shader_tile_image
       "SPV_EXT_shader_viewport_index_layer",
+      // SPV_EXT_ycbcr_attachments
 
       // vendor extensions
       "SPV_GOOGLE_decorate_string",
       "SPV_GOOGLE_hlsl_functionality1",
       "SPV_GOOGLE_user_type",
-      "SPV_NV_compute_shader_derivatives",
   };
 
   // whitelist supported extensions
@@ -607,19 +629,21 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       case Capability::PhysicalStorageBufferAddresses:
       case Capability::MeshShadingEXT:
       case Capability::QuadControlKHR:
+      {
+        supported = true;
+        break;
+      }
       case Capability::GroupNonUniform:
-      case Capability::GroupNonUniformArithmetic:
+      case Capability::GroupNonUniformVote:
       case Capability::GroupNonUniformBallot:
-      case Capability::GroupNonUniformClustered:
-      case Capability::GroupNonUniformQuad:
-      case Capability::GroupNonUniformRotateKHR:
       case Capability::GroupNonUniformShuffle:
       case Capability::GroupNonUniformShuffleRelative:
-      case Capability::GroupNonUniformVote:
+      case Capability::GroupNonUniformClustered:
+      case Capability::GroupNonUniformQuad:
       case Capability::SubgroupBallotKHR:
       case Capability::SubgroupVoteKHR:
-      case Capability::ComputeDerivativeGroupQuadsKHR:
-      case Capability::ComputeDerivativeGroupLinearKHR:
+      case Capability::GroupNonUniformRotateKHR:
+      case Capability::GroupNonUniformArithmetic:
       {
         supported = true;
         break;
@@ -627,31 +651,48 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
 
       // we plan to support these but needs additional testing/proving
 
-      // SPIR-V 1.0 MSAA custom interpolation
+      // MSAA custom interpolation
       case Capability::InterpolationFunction:
-      {
-        supported = false;
-        break;
-      }
 
-      // SPIR-V 1.0 Sparse Operations
-      case Capability::SparseResidency:
-      {
-        supported = false;
-        break;
-      }
+      // variable pointers
+      case Capability::VariablePointersStorageBuffer:
+      case Capability::VariablePointers:
 
-      // SPIR-V 1.4 / SPV_KHR_float_controls
+      // float controls
       case Capability::DenormPreserve:
       case Capability::DenormFlushToZero:
       case Capability::RoundingModeRTE:
       case Capability::RoundingModeRTZ:
+
+      case Capability::FloatControls2:
+
+      // group instructions
+
+      // workgroup layout:
+      case Capability::WorkgroupMemoryExplicitLayout16BitAccessKHR:
+      case Capability::WorkgroupMemoryExplicitLayout8BitAccessKHR:
+      case Capability::WorkgroupMemoryExplicitLayoutKHR:
+
+      // sparse operations
+      case Capability::SparseResidency:
+
+      // fragment interlock
+      case Capability::FragmentShaderSampleInterlockEXT:
+      case Capability::FragmentShaderShadingRateInterlockEXT:
+      case Capability::FragmentShaderPixelInterlockEXT:
       {
         supported = false;
         break;
       }
 
-      // SPIR-V 1.6 / SPV_KHR_integer_dot_product
+      // fragment shading rate
+      case Capability::FragmentShadingRateKHR:
+      {
+        supported = false;
+        break;
+      }
+
+      // integer dot product
       case Capability::DotProduct:
       case Capability::DotProductInput4x8Bit:
       case Capability::DotProductInput4x8BitPacked:
@@ -661,112 +702,47 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
         break;
       }
 
-      // SPV_KHR_bfloat16
-      case Capability::BFloat16TypeKHR:
-      case Capability::BFloat16DotProductKHR:
+      // raytracing
+      case Capability::RayQueryKHR:
+      case Capability::RayTraversalPrimitiveCullingKHR:
+      case Capability::RayTracingKHR:
+      case Capability::RayCullMaskKHR:
+      case Capability::RayTracingOpacityMicromapEXT:
+      case Capability::RayTracingNV:
+      case Capability::ShaderInvocationReorderNV:
+      case Capability::RayQueryPositionFetchKHR:
+      case Capability::RayTracingPositionFetchKHR:
       {
         supported = false;
         break;
       }
 
-      // SPV_KHR_float_controls2
-      case Capability::FloatControls2:
-      {
-        supported = false;
-        break;
-      }
-
-      // SPV_KHR_fma
-      case Capability::FMAKHR:
-      {
-        supported = false;
-        break;
-      }
-
-      // SPV_KHR_fragment_shader_barycentric
+      // barycentric
       case Capability::FragmentBarycentricKHR:
       {
         supported = false;
         break;
       }
 
-      // SPV_KHR_fragment_shading_rate
-      case Capability::FragmentShadingRateKHR:
+      // compute shader derivatives
+      case Capability::ComputeDerivativeGroupQuadsKHR:
+      case Capability::ComputeDerivativeGroupLinearKHR:
       {
         supported = false;
         break;
       }
 
-      // SPV_KHR_untyped_pointers
+      // untyped pointers
       case Capability::UntypedPointersKHR:
       {
         supported = false;
         break;
       }
 
-      // SPV_KHR_variable_pointers
-      case Capability::VariablePointersStorageBuffer:
-      case Capability::VariablePointers:
-      {
-        supported = false;
-        break;
-      }
-
-      // SPV_KHR_workgroup_memory_explicit_layout
-      case Capability::WorkgroupMemoryExplicitLayout16BitAccessKHR:
-      case Capability::WorkgroupMemoryExplicitLayout8BitAccessKHR:
-      case Capability::WorkgroupMemoryExplicitLayoutKHR:
-      {
-        supported = false;
-        break;
-      }
-
-      // Ray tracing
-      case Capability::RayCullMaskKHR:
-      case Capability::RayQueryKHR:
-      case Capability::RayQueryPositionFetchKHR:
-      case Capability::RayTracingKHR:
-      case Capability::RayTracingPositionFetchKHR:
-      case Capability::RayTraversalPrimitiveCullingKHR:
-      case Capability::RayTracingOpacityMicromapEXT:
-      {
-        supported = false;
-        break;
-      }
-
-      // SPV_EXT_float8
-      case Capability::Float8EXT:
-      {
-        supported = false;
-        break;
-      }
-
-      // SPV_EXT_fragment_shader_interlock
-      case Capability::FragmentShaderSampleInterlockEXT:
-      case Capability::FragmentShaderShadingRateInterlockEXT:
-      case Capability::FragmentShaderPixelInterlockEXT:
-      {
-        supported = false;
-        break;
-      }
-
-      case Capability::ReplicatedCompositesEXT:
-      {
-        supported = false;
-        break;
-      }
-
-      // SPV_EXT_shader_64bit_indexing
-      case Capability::Shader64BitIndexingEXT:
-      {
-        supported = false;
-        break;
-      }
-
-      // SPV_EXT_shader_tile_image
-      case Capability::TileImageColorReadAccessEXT:
-      case Capability::TileImageDepthReadAccessEXT:
-      case Capability::TileImageStencilReadAccessEXT:
+      // bfloat16
+      case Capability::BFloat16TypeKHR:
+      case Capability::BFloat16DotProductKHR:
+      case Capability::BFloat16CooperativeMatrixKHR:
       {
         supported = false;
         break;
@@ -813,12 +789,12 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       case Capability::FunctionPointersINTEL:
       case Capability::IndirectReferencesINTEL:
       case Capability::FPGAKernelAttributesINTEL:
-      case Capability::FPGALoopControlsALTERA:
-      case Capability::FPGAMemoryAttributesALTERA:
-      case Capability::FPGARegALTERA:
+      case Capability::FPGALoopControlsINTEL:
+      case Capability::FPGAMemoryAttributesINTEL:
+      case Capability::FPGARegINTEL:
       case Capability::UnstructuredLoopControlsINTEL:
       case Capability::KernelAttributesINTEL:
-      case Capability::BlockingPipesALTERA:
+      case Capability::BlockingPipesINTEL:
       case Capability::RayTracingMotionBlurNV:
       case Capability::RoundToInfinityINTEL:
       case Capability::FloatingPointModeINTEL:
@@ -828,15 +804,15 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       case Capability::VariableLengthArrayINTEL:
       case Capability::FunctionFloatControlINTEL:
       case Capability::FPFastMathModeINTEL:
-      case Capability::ArbitraryPrecisionFixedPointALTERA:
-      case Capability::ArbitraryPrecisionFloatingPointALTERA:
-      case Capability::ArbitraryPrecisionIntegersALTERA:
-      case Capability::FPGAMemoryAccessesALTERA:
-      case Capability::FPGAClusterAttributesALTERA:
-      case Capability::LoopFuseALTERA:
-      case Capability::FPGABufferLocationALTERA:
-      case Capability::USMStorageClassesALTERA:
-      case Capability::IOPipesALTERA:
+      case Capability::ArbitraryPrecisionFixedPointINTEL:
+      case Capability::ArbitraryPrecisionFloatingPointINTEL:
+      case Capability::ArbitraryPrecisionIntegersINTEL:
+      case Capability::FPGAMemoryAccessesINTEL:
+      case Capability::FPGAClusterAttributesINTEL:
+      case Capability::LoopFuseINTEL:
+      case Capability::FPGABufferLocationINTEL:
+      case Capability::USMStorageClassesINTEL:
+      case Capability::IOPipesINTEL:
       case Capability::LongCompositesINTEL:
       case Capability::DebugInfoModuleINTEL:
       case Capability::BindlessTextureNV:
@@ -844,16 +820,19 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       case Capability::SplitBarrierINTEL:
       case Capability::GroupUniformArithmeticKHR:
       case Capability::CoreBuiltinsARM:
-      case Capability::FPGADSPControlALTERA:
-      case Capability::FPGAInvocationPipeliningAttributesALTERA:
-      case Capability::RuntimeAlignedAttributeALTERA:
+      case Capability::FPGADSPControlINTEL:
+      case Capability::FPGAInvocationPipeliningAttributesINTEL:
+      case Capability::RuntimeAlignedAttributeINTEL:
+      case Capability::TileImageColorReadAccessEXT:
+      case Capability::TileImageDepthReadAccessEXT:
+      case Capability::TileImageStencilReadAccessEXT:
       case Capability::TextureSampleWeightedQCOM:
       case Capability::TextureBoxFilterQCOM:
       case Capability::TextureBlockMatchQCOM:
       case Capability::BFloat16ConversionINTEL:
       case Capability::FPGAKernelAttributesv2INTEL:
-      case Capability::FPGALatencyControlALTERA:
-      case Capability::FPGAArgumentInterfacesALTERA:
+      case Capability::FPGALatencyControlINTEL:
+      case Capability::FPGAArgumentInterfacesINTEL:
       case Capability::TextureBlockMatch2QCOM:
       case Capability::ShaderEnqueueAMDX:
       case Capability::DisplacementMicromapNV:
@@ -867,9 +846,9 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       case Capability::CooperativeMatrixPerElementOperationsNV:
       case Capability::CooperativeMatrixTensorAddressingNV:
       case Capability::CooperativeMatrixBlockLoadsNV:
-      case Capability::FPGAClusterAttributesV2ALTERA:
+      case Capability::FPGAClusterAttributesV2INTEL:
       case Capability::FPMaxErrorINTEL:
-      case Capability::GlobalVariableFPGADecorationsALTERA:
+      case Capability::GlobalVariableFPGADecorationsINTEL:
       case Capability::MaskedGatherScatterINTEL:
       case Capability::CacheControlsINTEL:
       case Capability::RegisterLimitsINTEL:
@@ -881,6 +860,7 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       case Capability::SubgroupMatrixMultiplyAccumulateINTEL:
       case Capability::CooperativeMatrixLayoutsARM:
       case Capability::RawAccessChainsNV:
+      case Capability::ReplicatedCompositesEXT:
       case Capability::RayTracingSpheresGeometryNV:
       case Capability::RayTracingLinearSweptSpheresGeometryNV:
       case Capability::RayTracingClusterAccelerationStructureNV:
@@ -893,19 +873,9 @@ void Reflector::CheckDebuggable(bool &debuggable, rdcstr &debugStatus) const
       case Capability::TileShadingQCOM:
       case Capability::Int4TypeINTEL:
       case Capability::Int4CooperativeMatrixINTEL:
-      case Capability::TaskSequenceALTERA:
+      case Capability::TaskSequenceINTEL:
       case Capability::TernaryBitwiseFunctionINTEL:
       case Capability::TensorFloat32RoundingINTEL:
-      case Capability::GraphARM:
-      case Capability::BFloat16CooperativeMatrixKHR:
-      case Capability::Float8CooperativeMatrixEXT:
-      case Capability::CooperativeMatrixConversionQCOM:
-      case Capability::UntypedVariableLengthArrayINTEL:
-      case Capability::SpecConditionalINTEL:
-      case Capability::FunctionVariantsINTEL:
-      case Capability::BindlessImagesINTEL:
-      case Capability::RayTracingNV:
-      case Capability::ShaderInvocationReorderNV:
       case Capability::Max:
       case Capability::Invalid:
       {
@@ -1052,10 +1022,6 @@ ShaderDebugTrace *Debugger::BeginDebug(DebugAPIWrapper *api, const ShaderStage s
   subgroupSize = threadsInSubgroup;
   stage = shaderStage;
   apiWrapper = api;
-  ShaderFeatures shaderFeatures = ShaderFeatures::None;
-  if((stage == ShaderStage::Fragment) ||
-     ((stage == ShaderStage::Compute) && patchData.derivativeMode != ComputeDerivativeMode::None))
-    shaderFeatures |= ShaderFeatures::Derivatives;
 
   queuedDeviceThreadSteps.resize(threadsInWorkgroup);
   queuedGpuMathOps.resize(threadsInWorkgroup);
@@ -1064,7 +1030,7 @@ ShaderDebugTrace *Debugger::BeginDebug(DebugAPIWrapper *api, const ShaderStage s
   queuedJobs.resize(threadsInWorkgroup);
   for(uint32_t i = 0; i < threadsInWorkgroup; i++)
   {
-    workgroup.push_back(ThreadState(*this, global, stage, shaderFeatures));
+    workgroup.push_back(ThreadState(*this, global));
     queuedDeviceThreadSteps[i] = false;
     queuedGpuMathOps[i] = false;
     queuedGpuSampleGatherOps[i] = false;
@@ -1703,11 +1669,6 @@ ShaderDebugTrace *Debugger::BeginDebug(DebugAPIWrapper *api, const ShaderStage s
     if(stage == ShaderStage::Pixel)
     {
       lane.helperInvocation = apiWrapper->GetThreadProperty(i, ThreadProperty::Helper) != 0;
-      lane.quadLaneIndex = apiWrapper->GetThreadProperty(i, ThreadProperty::QuadLane);
-      lane.quadId = apiWrapper->GetThreadProperty(i, ThreadProperty::QuadId);
-    }
-    if(stage == ShaderStage::Compute)
-    {
       lane.quadLaneIndex = apiWrapper->GetThreadProperty(i, ThreadProperty::QuadLane);
       lane.quadId = apiWrapper->GetThreadProperty(i, ThreadProperty::QuadId);
     }
@@ -2805,7 +2766,7 @@ rdcarray<ShaderDebugState> Debugger::ContinueDebug()
         continue;
 
       const rdcarray<ThreadReference> &threadRefs = tangle.GetThreadRefs();
-#if ENABLED(RDOC_DEVEL)
+#if !defined(RELEASE)
       for(const ThreadReference &ref : threadRefs)
       {
         const uint32_t threadId = ref.id;
@@ -2813,7 +2774,7 @@ rdcarray<ShaderDebugState> Debugger::ContinueDebug()
         ThreadState &thread = workgroup[lane];
         RDCASSERT(!thread.IsSimulationStepActive());
       }
-#endif    // #if ENABLED(RDOC_DEVEL)
+#endif    // #if !defined(RELEASE)
 
       ExecutionPoint newConvergeInstruction = INVALID_EXECUTION_POINT;
       ExecutionPoint newFunctionReturnPoint = INVALID_EXECUTION_POINT;
@@ -4480,18 +4441,6 @@ void Debugger::RegisterOp(Iter it)
     {
       m_DebugInfo.valid = true;
     }
-  }
-  else if((opdata.op == Op::AccessChain) || (opdata.op == Op::InBoundsAccessChain))
-  {
-    OpAccessChain chain(it);
-    // Base pointers never retire
-    idLiveRange[chain.base].second = ~0U;
-  }
-  else if((opdata.op == Op::PtrAccessChain) || (opdata.op == Op::InBoundsPtrAccessChain))
-  {
-    OpPtrAccessChain chain(it);
-    // Base pointers never retire
-    idLiveRange[chain.base].second = ~0U;
   }
 
   if(opdata.op == Op::Source)

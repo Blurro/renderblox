@@ -2011,8 +2011,6 @@ bool ReplayController::FatalErrorCheck()
     m_GLPipelineState = GLPipe::State();
     m_VulkanPipelineState = VKPipe::State();
 
-    m_PipeState.SetDescriptorAccess({}, {}, {});
-
     return true;
   }
 

@@ -25,13 +25,29 @@
 /******************************************************************************
  * Generated from Khronos SPIR-V machine-readable JSON grammar.
  *
- * Copyright: 2014-2024 The Khronos Group Inc.
- * License: MIT
+ * Copyright (c) 2014-2024 The Khronos Group Inc.
  *
- * MODIFICATIONS TO THIS FILE MAY MEAN IT NO LONGER ACCURATELY REFLECTS
- * KHRONOS STANDARDS. THE UNMODIFIED, NORMATIVE VERSIONS OF KHRONOS
- * SPECIFICATIONS AND HEADER INFORMATION ARE LOCATED AT
- * https://www.khronos.org/registry/
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and/or associated documentation files (the "Materials"),
+ * to deal in the Materials without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Materials, and to permit persons to whom the
+ * Materials are furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Materials.
+ *
+ * MODIFICATIONS TO THIS FILE MAY MEAN IT NO LONGER ACCURATELY REFLECTS KHRONOS
+ * STANDARDS. THE UNMODIFIED, NORMATIVE VERSIONS OF KHRONOS SPECIFICATIONS AND
+ * HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/
+ *
+ * THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM,OUT OF OR IN CONNECTION WITH THE MATERIALS OR THE USE OR OTHER DEALINGS
+ * IN THE MATERIALS.
  ******************************************************************************/
 
 #pragma once
@@ -70,16 +86,6 @@ inline uint32_t DecodeParam(const ConstIter &it, uint32_t &word)
   if(word >= it.size()) return 0;
   
   uint32_t ret = it.word(word);
-  word += 1;
-  return ret;
-}
-
-template<>
-inline Capability DecodeParam(const ConstIter &it, uint32_t &word)
-{
-  if(word >= it.size()) return Capability::Invalid;
-  
-  Capability ret = Capability(word);
   word += 1;
   return ret;
 }
@@ -335,49 +341,49 @@ inline LoopControlAndParamDatas DecodeParam(const ConstIter &it, uint32_t &word)
     ret.partialCount = (uint32_t)it.word(word);
     word += 1;
   }
-  if(ret.flags & LoopControl::InitiationIntervalALTERA)
+  if(ret.flags & LoopControl::InitiationIntervalINTEL)
   {
-    ret.initiationIntervalALTERA = (uint32_t)it.word(word);
+    ret.initiationIntervalINTEL = (uint32_t)it.word(word);
     word += 1;
   }
-  if(ret.flags & LoopControl::MaxConcurrencyALTERA)
+  if(ret.flags & LoopControl::MaxConcurrencyINTEL)
   {
-    ret.maxConcurrencyALTERA = (uint32_t)it.word(word);
+    ret.maxConcurrencyINTEL = (uint32_t)it.word(word);
     word += 1;
   }
-  if(ret.flags & LoopControl::DependencyArrayALTERA)
+  if(ret.flags & LoopControl::DependencyArrayINTEL)
   {
-    ret.dependencyArrayALTERA = (uint32_t)it.word(word);
+    ret.dependencyArrayINTEL = (uint32_t)it.word(word);
     word += 1;
   }
-  if(ret.flags & LoopControl::PipelineEnableALTERA)
+  if(ret.flags & LoopControl::PipelineEnableINTEL)
   {
-    ret.pipelineEnableALTERA = (uint32_t)it.word(word);
+    ret.pipelineEnableINTEL = (uint32_t)it.word(word);
     word += 1;
   }
-  if(ret.flags & LoopControl::LoopCoalesceALTERA)
+  if(ret.flags & LoopControl::LoopCoalesceINTEL)
   {
-    ret.loopCoalesceALTERA = (uint32_t)it.word(word);
+    ret.loopCoalesceINTEL = (uint32_t)it.word(word);
     word += 1;
   }
-  if(ret.flags & LoopControl::MaxInterleavingALTERA)
+  if(ret.flags & LoopControl::MaxInterleavingINTEL)
   {
-    ret.maxInterleavingALTERA = (uint32_t)it.word(word);
+    ret.maxInterleavingINTEL = (uint32_t)it.word(word);
     word += 1;
   }
-  if(ret.flags & LoopControl::SpeculatedIterationsALTERA)
+  if(ret.flags & LoopControl::SpeculatedIterationsINTEL)
   {
-    ret.speculatedIterationsALTERA = (uint32_t)it.word(word);
+    ret.speculatedIterationsINTEL = (uint32_t)it.word(word);
     word += 1;
   }
-  if(ret.flags & LoopControl::LoopCountALTERA)
+  if(ret.flags & LoopControl::LoopCountINTEL)
   {
-    ret.loopCountALTERA = (uint32_t)it.word(word);
+    ret.loopCountINTEL = (uint32_t)it.word(word);
     word += 1;
   }
-  if(ret.flags & LoopControl::MaxReinvocationDelayALTERA)
+  if(ret.flags & LoopControl::MaxReinvocationDelayINTEL)
   {
-    ret.maxReinvocationDelayALTERA = (uint32_t)it.word(word);
+    ret.maxReinvocationDelayINTEL = (uint32_t)it.word(word);
     word += 1;
   }
   return ret;
@@ -410,41 +416,41 @@ inline void EncodeParam(rdcarray<uint32_t> &words, const LoopControlAndParamData
   {
     words.push_back((uint32_t)param.partialCount);
   }
-  if(param.flags & LoopControl::InitiationIntervalALTERA)
+  if(param.flags & LoopControl::InitiationIntervalINTEL)
   {
-    words.push_back((uint32_t)param.initiationIntervalALTERA);
+    words.push_back((uint32_t)param.initiationIntervalINTEL);
   }
-  if(param.flags & LoopControl::MaxConcurrencyALTERA)
+  if(param.flags & LoopControl::MaxConcurrencyINTEL)
   {
-    words.push_back((uint32_t)param.maxConcurrencyALTERA);
+    words.push_back((uint32_t)param.maxConcurrencyINTEL);
   }
-  if(param.flags & LoopControl::DependencyArrayALTERA)
+  if(param.flags & LoopControl::DependencyArrayINTEL)
   {
-    words.push_back((uint32_t)param.dependencyArrayALTERA);
+    words.push_back((uint32_t)param.dependencyArrayINTEL);
   }
-  if(param.flags & LoopControl::PipelineEnableALTERA)
+  if(param.flags & LoopControl::PipelineEnableINTEL)
   {
-    words.push_back((uint32_t)param.pipelineEnableALTERA);
+    words.push_back((uint32_t)param.pipelineEnableINTEL);
   }
-  if(param.flags & LoopControl::LoopCoalesceALTERA)
+  if(param.flags & LoopControl::LoopCoalesceINTEL)
   {
-    words.push_back((uint32_t)param.loopCoalesceALTERA);
+    words.push_back((uint32_t)param.loopCoalesceINTEL);
   }
-  if(param.flags & LoopControl::MaxInterleavingALTERA)
+  if(param.flags & LoopControl::MaxInterleavingINTEL)
   {
-    words.push_back((uint32_t)param.maxInterleavingALTERA);
+    words.push_back((uint32_t)param.maxInterleavingINTEL);
   }
-  if(param.flags & LoopControl::SpeculatedIterationsALTERA)
+  if(param.flags & LoopControl::SpeculatedIterationsINTEL)
   {
-    words.push_back((uint32_t)param.speculatedIterationsALTERA);
+    words.push_back((uint32_t)param.speculatedIterationsINTEL);
   }
-  if(param.flags & LoopControl::LoopCountALTERA)
+  if(param.flags & LoopControl::LoopCountINTEL)
   {
-    words.push_back((uint32_t)param.loopCountALTERA);
+    words.push_back((uint32_t)param.loopCountINTEL);
   }
-  if(param.flags & LoopControl::MaxReinvocationDelayALTERA)
+  if(param.flags & LoopControl::MaxReinvocationDelayINTEL)
   {
-    words.push_back((uint32_t)param.maxReinvocationDelayALTERA);
+    words.push_back((uint32_t)param.maxReinvocationDelayINTEL);
   }
 }
 
@@ -458,15 +464,15 @@ inline uint16_t ExtraWordCount(const LoopControl loopControl)
     case LoopControl::IterationMultiple: return 1;
     case LoopControl::PeelCount: return 1;
     case LoopControl::PartialCount: return 1;
-    case LoopControl::InitiationIntervalALTERA: return 1;
-    case LoopControl::MaxConcurrencyALTERA: return 1;
-    case LoopControl::DependencyArrayALTERA: return 1;
-    case LoopControl::PipelineEnableALTERA: return 1;
-    case LoopControl::LoopCoalesceALTERA: return 1;
-    case LoopControl::MaxInterleavingALTERA: return 1;
-    case LoopControl::SpeculatedIterationsALTERA: return 1;
-    case LoopControl::LoopCountALTERA: return 1;
-    case LoopControl::MaxReinvocationDelayALTERA: return 1;
+    case LoopControl::InitiationIntervalINTEL: return 1;
+    case LoopControl::MaxConcurrencyINTEL: return 1;
+    case LoopControl::DependencyArrayINTEL: return 1;
+    case LoopControl::PipelineEnableINTEL: return 1;
+    case LoopControl::LoopCoalesceINTEL: return 1;
+    case LoopControl::MaxInterleavingINTEL: return 1;
+    case LoopControl::SpeculatedIterationsINTEL: return 1;
+    case LoopControl::LoopCountINTEL: return 1;
+    case LoopControl::MaxReinvocationDelayINTEL: return 1;
     default: break;
   }
   return 0;
@@ -1950,145 +1956,145 @@ struct DecorationParam<Decoration::FunctionDenormModeINTEL>
 };
 
 template<>
-struct DecorationParam<Decoration::NumbanksALTERA>
+struct DecorationParam<Decoration::NumbanksINTEL>
 {
-  uint32_t numbanksALTERA;
-  DecorationParam(uint32_t numbanksALTERAParam) {  numbanksALTERA = numbanksALTERAParam; }
+  uint32_t numbanksINTEL;
+  DecorationParam(uint32_t numbanksINTELParam) {  numbanksINTEL = numbanksINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::NumbanksALTERA);
-    ret.numbanksALTERA = numbanksALTERA;
+    DecorationAndParamData ret(Decoration::NumbanksINTEL);
+    ret.numbanksINTEL = numbanksINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::BankwidthALTERA>
+struct DecorationParam<Decoration::BankwidthINTEL>
 {
-  uint32_t bankwidthALTERA;
-  DecorationParam(uint32_t bankwidthALTERAParam) {  bankwidthALTERA = bankwidthALTERAParam; }
+  uint32_t bankwidthINTEL;
+  DecorationParam(uint32_t bankwidthINTELParam) {  bankwidthINTEL = bankwidthINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::BankwidthALTERA);
-    ret.bankwidthALTERA = bankwidthALTERA;
+    DecorationAndParamData ret(Decoration::BankwidthINTEL);
+    ret.bankwidthINTEL = bankwidthINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MaxPrivateCopiesALTERA>
+struct DecorationParam<Decoration::MaxPrivateCopiesINTEL>
 {
-  uint32_t maxPrivateCopiesALTERA;
-  DecorationParam(uint32_t maxPrivateCopiesALTERAParam) {  maxPrivateCopiesALTERA = maxPrivateCopiesALTERAParam; }
+  uint32_t maxPrivateCopiesINTEL;
+  DecorationParam(uint32_t maxPrivateCopiesINTELParam) {  maxPrivateCopiesINTEL = maxPrivateCopiesINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MaxPrivateCopiesALTERA);
-    ret.maxPrivateCopiesALTERA = maxPrivateCopiesALTERA;
+    DecorationAndParamData ret(Decoration::MaxPrivateCopiesINTEL);
+    ret.maxPrivateCopiesINTEL = maxPrivateCopiesINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MaxReplicatesALTERA>
+struct DecorationParam<Decoration::MaxReplicatesINTEL>
 {
-  uint32_t maxReplicatesALTERA;
-  DecorationParam(uint32_t maxReplicatesALTERAParam) {  maxReplicatesALTERA = maxReplicatesALTERAParam; }
+  uint32_t maxReplicatesINTEL;
+  DecorationParam(uint32_t maxReplicatesINTELParam) {  maxReplicatesINTEL = maxReplicatesINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MaxReplicatesALTERA);
-    ret.maxReplicatesALTERA = maxReplicatesALTERA;
+    DecorationAndParamData ret(Decoration::MaxReplicatesINTEL);
+    ret.maxReplicatesINTEL = maxReplicatesINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::BankBitsALTERA>
+struct DecorationParam<Decoration::BankBitsINTEL>
 {
-  uint32_t bankBitsALTERA;
-  DecorationParam(uint32_t bankBitsALTERAParam) {  bankBitsALTERA = bankBitsALTERAParam; }
+  uint32_t bankBitsINTEL;
+  DecorationParam(uint32_t bankBitsINTELParam) {  bankBitsINTEL = bankBitsINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::BankBitsALTERA);
-    ret.bankBitsALTERA = bankBitsALTERA;
+    DecorationAndParamData ret(Decoration::BankBitsINTEL);
+    ret.bankBitsINTEL = bankBitsINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::ForcePow2DepthALTERA>
+struct DecorationParam<Decoration::ForcePow2DepthINTEL>
 {
-  uint32_t forcePow2DepthALTERA;
-  DecorationParam(uint32_t forcePow2DepthALTERAParam) {  forcePow2DepthALTERA = forcePow2DepthALTERAParam; }
+  uint32_t forcePow2DepthINTEL;
+  DecorationParam(uint32_t forcePow2DepthINTELParam) {  forcePow2DepthINTEL = forcePow2DepthINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::ForcePow2DepthALTERA);
-    ret.forcePow2DepthALTERA = forcePow2DepthALTERA;
+    DecorationAndParamData ret(Decoration::ForcePow2DepthINTEL);
+    ret.forcePow2DepthINTEL = forcePow2DepthINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::StridesizeALTERA>
+struct DecorationParam<Decoration::StridesizeINTEL>
 {
-  uint32_t stridesizeALTERA;
-  DecorationParam(uint32_t stridesizeALTERAParam) {  stridesizeALTERA = stridesizeALTERAParam; }
+  uint32_t stridesizeINTEL;
+  DecorationParam(uint32_t stridesizeINTELParam) {  stridesizeINTEL = stridesizeINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::StridesizeALTERA);
-    ret.stridesizeALTERA = stridesizeALTERA;
+    DecorationAndParamData ret(Decoration::StridesizeINTEL);
+    ret.stridesizeINTEL = stridesizeINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::WordsizeALTERA>
+struct DecorationParam<Decoration::WordsizeINTEL>
 {
-  uint32_t wordsizeALTERA;
-  DecorationParam(uint32_t wordsizeALTERAParam) {  wordsizeALTERA = wordsizeALTERAParam; }
+  uint32_t wordsizeINTEL;
+  DecorationParam(uint32_t wordsizeINTELParam) {  wordsizeINTEL = wordsizeINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::WordsizeALTERA);
-    ret.wordsizeALTERA = wordsizeALTERA;
+    DecorationAndParamData ret(Decoration::WordsizeINTEL);
+    ret.wordsizeINTEL = wordsizeINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::CacheSizeALTERA>
+struct DecorationParam<Decoration::CacheSizeINTEL>
 {
-  uint32_t cacheSizeALTERA;
-  DecorationParam(uint32_t cacheSizeALTERAParam) {  cacheSizeALTERA = cacheSizeALTERAParam; }
+  uint32_t cacheSizeINTEL;
+  DecorationParam(uint32_t cacheSizeINTELParam) {  cacheSizeINTEL = cacheSizeINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::CacheSizeALTERA);
-    ret.cacheSizeALTERA = cacheSizeALTERA;
+    DecorationAndParamData ret(Decoration::CacheSizeINTEL);
+    ret.cacheSizeINTEL = cacheSizeINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::PrefetchALTERA>
+struct DecorationParam<Decoration::PrefetchINTEL>
 {
-  uint32_t prefetchALTERA;
-  DecorationParam(uint32_t prefetchALTERAParam) {  prefetchALTERA = prefetchALTERAParam; }
+  uint32_t prefetchINTEL;
+  DecorationParam(uint32_t prefetchINTELParam) {  prefetchINTEL = prefetchINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::PrefetchALTERA);
-    ret.prefetchALTERA = prefetchALTERA;
+    DecorationAndParamData ret(Decoration::PrefetchINTEL);
+    ret.prefetchINTEL = prefetchINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MathOpDSPModeALTERA>
+struct DecorationParam<Decoration::MathOpDSPModeINTEL>
 {
-  MathOpDSPModeALTERAParams mathOpDSPModeALTERA;
-  DecorationParam(uint32_t mode, uint32_t propagate) {  mathOpDSPModeALTERA.mode = mode; mathOpDSPModeALTERA.propagate = propagate; }
+  MathOpDSPModeINTELParams mathOpDSPModeINTEL;
+  DecorationParam(uint32_t mode, uint32_t propagate) {  mathOpDSPModeINTEL.mode = mode; mathOpDSPModeINTEL.propagate = propagate; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MathOpDSPModeALTERA);
-    ret.mathOpDSPModeALTERA.mode = mathOpDSPModeALTERA.mode;
-    ret.mathOpDSPModeALTERA.propagate = mathOpDSPModeALTERA.propagate;
+    DecorationAndParamData ret(Decoration::MathOpDSPModeINTEL);
+    ret.mathOpDSPModeINTEL.mode = mathOpDSPModeINTEL.mode;
+    ret.mathOpDSPModeINTEL.propagate = mathOpDSPModeINTEL.propagate;
     return ret;
   }
 };
@@ -2120,66 +2126,66 @@ struct DecorationParam<Decoration::NoAliasINTEL>
 };
 
 template<>
-struct DecorationParam<Decoration::InitiationIntervalALTERA>
+struct DecorationParam<Decoration::InitiationIntervalINTEL>
 {
-  uint32_t initiationIntervalALTERA;
-  DecorationParam(uint32_t initiationIntervalALTERAParam) {  initiationIntervalALTERA = initiationIntervalALTERAParam; }
+  uint32_t initiationIntervalINTEL;
+  DecorationParam(uint32_t initiationIntervalINTELParam) {  initiationIntervalINTEL = initiationIntervalINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::InitiationIntervalALTERA);
-    ret.initiationIntervalALTERA = initiationIntervalALTERA;
+    DecorationAndParamData ret(Decoration::InitiationIntervalINTEL);
+    ret.initiationIntervalINTEL = initiationIntervalINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MaxConcurrencyALTERA>
+struct DecorationParam<Decoration::MaxConcurrencyINTEL>
 {
-  uint32_t maxConcurrencyALTERA;
-  DecorationParam(uint32_t maxConcurrencyALTERAParam) {  maxConcurrencyALTERA = maxConcurrencyALTERAParam; }
+  uint32_t maxConcurrencyINTEL;
+  DecorationParam(uint32_t maxConcurrencyINTELParam) {  maxConcurrencyINTEL = maxConcurrencyINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MaxConcurrencyALTERA);
-    ret.maxConcurrencyALTERA = maxConcurrencyALTERA;
+    DecorationAndParamData ret(Decoration::MaxConcurrencyINTEL);
+    ret.maxConcurrencyINTEL = maxConcurrencyINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::PipelineEnableALTERA>
+struct DecorationParam<Decoration::PipelineEnableINTEL>
 {
-  uint32_t pipelineEnableALTERA;
-  DecorationParam(uint32_t pipelineEnableALTERAParam) {  pipelineEnableALTERA = pipelineEnableALTERAParam; }
+  uint32_t pipelineEnableINTEL;
+  DecorationParam(uint32_t pipelineEnableINTELParam) {  pipelineEnableINTEL = pipelineEnableINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::PipelineEnableALTERA);
-    ret.pipelineEnableALTERA = pipelineEnableALTERA;
+    DecorationAndParamData ret(Decoration::PipelineEnableINTEL);
+    ret.pipelineEnableINTEL = pipelineEnableINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::BufferLocationALTERA>
+struct DecorationParam<Decoration::BufferLocationINTEL>
 {
-  uint32_t bufferLocationALTERA;
-  DecorationParam(uint32_t bufferLocationALTERAParam) {  bufferLocationALTERA = bufferLocationALTERAParam; }
+  uint32_t bufferLocationINTEL;
+  DecorationParam(uint32_t bufferLocationINTELParam) {  bufferLocationINTEL = bufferLocationINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::BufferLocationALTERA);
-    ret.bufferLocationALTERA = bufferLocationALTERA;
+    DecorationAndParamData ret(Decoration::BufferLocationINTEL);
+    ret.bufferLocationINTEL = bufferLocationINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::IOPipeStorageALTERA>
+struct DecorationParam<Decoration::IOPipeStorageINTEL>
 {
-  uint32_t iOPipeStorageALTERA;
-  DecorationParam(uint32_t iOPipeStorageALTERAParam) {  iOPipeStorageALTERA = iOPipeStorageALTERAParam; }
+  uint32_t iOPipeStorageINTEL;
+  DecorationParam(uint32_t iOPipeStorageINTELParam) {  iOPipeStorageINTEL = iOPipeStorageINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::IOPipeStorageALTERA);
-    ret.iOPipeStorageALTERA = iOPipeStorageALTERA;
+    DecorationAndParamData ret(Decoration::IOPipeStorageINTEL);
+    ret.iOPipeStorageINTEL = iOPipeStorageINTEL;
     return ret;
   }
 };
@@ -2212,146 +2218,133 @@ struct DecorationParam<Decoration::FPMaxErrorDecorationINTEL>
 };
 
 template<>
-struct DecorationParam<Decoration::LatencyControlLabelALTERA>
+struct DecorationParam<Decoration::LatencyControlLabelINTEL>
 {
-  uint32_t latencyControlLabelALTERA;
-  DecorationParam(uint32_t latencyControlLabelALTERAParam) {  latencyControlLabelALTERA = latencyControlLabelALTERAParam; }
+  uint32_t latencyControlLabelINTEL;
+  DecorationParam(uint32_t latencyControlLabelINTELParam) {  latencyControlLabelINTEL = latencyControlLabelINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::LatencyControlLabelALTERA);
-    ret.latencyControlLabelALTERA = latencyControlLabelALTERA;
+    DecorationAndParamData ret(Decoration::LatencyControlLabelINTEL);
+    ret.latencyControlLabelINTEL = latencyControlLabelINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::LatencyControlConstraintALTERA>
+struct DecorationParam<Decoration::LatencyControlConstraintINTEL>
 {
-  LatencyControlConstraintALTERAParams latencyControlConstraintALTERA;
-  DecorationParam(uint32_t relativeTo, uint32_t controlType, uint32_t relativeCycle) {  latencyControlConstraintALTERA.relativeTo = relativeTo; latencyControlConstraintALTERA.controlType = controlType; latencyControlConstraintALTERA.relativeCycle = relativeCycle; }
+  LatencyControlConstraintINTELParams latencyControlConstraintINTEL;
+  DecorationParam(uint32_t relativeTo, uint32_t controlType, uint32_t relativeCycle) {  latencyControlConstraintINTEL.relativeTo = relativeTo; latencyControlConstraintINTEL.controlType = controlType; latencyControlConstraintINTEL.relativeCycle = relativeCycle; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::LatencyControlConstraintALTERA);
-    ret.latencyControlConstraintALTERA.relativeTo = latencyControlConstraintALTERA.relativeTo;
-    ret.latencyControlConstraintALTERA.controlType = latencyControlConstraintALTERA.controlType;
-    ret.latencyControlConstraintALTERA.relativeCycle = latencyControlConstraintALTERA.relativeCycle;
+    DecorationAndParamData ret(Decoration::LatencyControlConstraintINTEL);
+    ret.latencyControlConstraintINTEL.relativeTo = latencyControlConstraintINTEL.relativeTo;
+    ret.latencyControlConstraintINTEL.controlType = latencyControlConstraintINTEL.controlType;
+    ret.latencyControlConstraintINTEL.relativeCycle = latencyControlConstraintINTEL.relativeCycle;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MMHostInterfaceAddressWidthALTERA>
+struct DecorationParam<Decoration::MMHostInterfaceAddressWidthINTEL>
 {
-  uint32_t mMHostInterfaceAddressWidthALTERA;
-  DecorationParam(uint32_t mMHostInterfaceAddressWidthALTERAParam) {  mMHostInterfaceAddressWidthALTERA = mMHostInterfaceAddressWidthALTERAParam; }
+  uint32_t mMHostInterfaceAddressWidthINTEL;
+  DecorationParam(uint32_t mMHostInterfaceAddressWidthINTELParam) {  mMHostInterfaceAddressWidthINTEL = mMHostInterfaceAddressWidthINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MMHostInterfaceAddressWidthALTERA);
-    ret.mMHostInterfaceAddressWidthALTERA = mMHostInterfaceAddressWidthALTERA;
+    DecorationAndParamData ret(Decoration::MMHostInterfaceAddressWidthINTEL);
+    ret.mMHostInterfaceAddressWidthINTEL = mMHostInterfaceAddressWidthINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MMHostInterfaceDataWidthALTERA>
+struct DecorationParam<Decoration::MMHostInterfaceDataWidthINTEL>
 {
-  uint32_t mMHostInterfaceDataWidthALTERA;
-  DecorationParam(uint32_t mMHostInterfaceDataWidthALTERAParam) {  mMHostInterfaceDataWidthALTERA = mMHostInterfaceDataWidthALTERAParam; }
+  uint32_t mMHostInterfaceDataWidthINTEL;
+  DecorationParam(uint32_t mMHostInterfaceDataWidthINTELParam) {  mMHostInterfaceDataWidthINTEL = mMHostInterfaceDataWidthINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MMHostInterfaceDataWidthALTERA);
-    ret.mMHostInterfaceDataWidthALTERA = mMHostInterfaceDataWidthALTERA;
+    DecorationAndParamData ret(Decoration::MMHostInterfaceDataWidthINTEL);
+    ret.mMHostInterfaceDataWidthINTEL = mMHostInterfaceDataWidthINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MMHostInterfaceLatencyALTERA>
+struct DecorationParam<Decoration::MMHostInterfaceLatencyINTEL>
 {
-  uint32_t mMHostInterfaceLatencyALTERA;
-  DecorationParam(uint32_t mMHostInterfaceLatencyALTERAParam) {  mMHostInterfaceLatencyALTERA = mMHostInterfaceLatencyALTERAParam; }
+  uint32_t mMHostInterfaceLatencyINTEL;
+  DecorationParam(uint32_t mMHostInterfaceLatencyINTELParam) {  mMHostInterfaceLatencyINTEL = mMHostInterfaceLatencyINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MMHostInterfaceLatencyALTERA);
-    ret.mMHostInterfaceLatencyALTERA = mMHostInterfaceLatencyALTERA;
+    DecorationAndParamData ret(Decoration::MMHostInterfaceLatencyINTEL);
+    ret.mMHostInterfaceLatencyINTEL = mMHostInterfaceLatencyINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MMHostInterfaceReadWriteModeALTERA>
+struct DecorationParam<Decoration::MMHostInterfaceReadWriteModeINTEL>
 {
-  AccessQualifier mMHostInterfaceReadWriteModeALTERA;
-  DecorationParam(AccessQualifier mMHostInterfaceReadWriteModeALTERAParam) {  mMHostInterfaceReadWriteModeALTERA = mMHostInterfaceReadWriteModeALTERAParam; }
+  AccessQualifier mMHostInterfaceReadWriteModeINTEL;
+  DecorationParam(AccessQualifier mMHostInterfaceReadWriteModeINTELParam) {  mMHostInterfaceReadWriteModeINTEL = mMHostInterfaceReadWriteModeINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MMHostInterfaceReadWriteModeALTERA);
-    ret.mMHostInterfaceReadWriteModeALTERA = mMHostInterfaceReadWriteModeALTERA;
+    DecorationAndParamData ret(Decoration::MMHostInterfaceReadWriteModeINTEL);
+    ret.mMHostInterfaceReadWriteModeINTEL = mMHostInterfaceReadWriteModeINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MMHostInterfaceMaxBurstALTERA>
+struct DecorationParam<Decoration::MMHostInterfaceMaxBurstINTEL>
 {
-  uint32_t mMHostInterfaceMaxBurstALTERA;
-  DecorationParam(uint32_t mMHostInterfaceMaxBurstALTERAParam) {  mMHostInterfaceMaxBurstALTERA = mMHostInterfaceMaxBurstALTERAParam; }
+  uint32_t mMHostInterfaceMaxBurstINTEL;
+  DecorationParam(uint32_t mMHostInterfaceMaxBurstINTELParam) {  mMHostInterfaceMaxBurstINTEL = mMHostInterfaceMaxBurstINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MMHostInterfaceMaxBurstALTERA);
-    ret.mMHostInterfaceMaxBurstALTERA = mMHostInterfaceMaxBurstALTERA;
+    DecorationAndParamData ret(Decoration::MMHostInterfaceMaxBurstINTEL);
+    ret.mMHostInterfaceMaxBurstINTEL = mMHostInterfaceMaxBurstINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::MMHostInterfaceWaitRequestALTERA>
+struct DecorationParam<Decoration::MMHostInterfaceWaitRequestINTEL>
 {
-  uint32_t mMHostInterfaceWaitRequestALTERA;
-  DecorationParam(uint32_t mMHostInterfaceWaitRequestALTERAParam) {  mMHostInterfaceWaitRequestALTERA = mMHostInterfaceWaitRequestALTERAParam; }
+  uint32_t mMHostInterfaceWaitRequestINTEL;
+  DecorationParam(uint32_t mMHostInterfaceWaitRequestINTELParam) {  mMHostInterfaceWaitRequestINTEL = mMHostInterfaceWaitRequestINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::MMHostInterfaceWaitRequestALTERA);
-    ret.mMHostInterfaceWaitRequestALTERA = mMHostInterfaceWaitRequestALTERA;
+    DecorationAndParamData ret(Decoration::MMHostInterfaceWaitRequestINTEL);
+    ret.mMHostInterfaceWaitRequestINTEL = mMHostInterfaceWaitRequestINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::InitModeALTERA>
+struct DecorationParam<Decoration::InitModeINTEL>
 {
-  InitializationModeQualifier initModeALTERA;
-  DecorationParam(InitializationModeQualifier initModeALTERAParam) {  initModeALTERA = initModeALTERAParam; }
+  InitializationModeQualifier initModeINTEL;
+  DecorationParam(InitializationModeQualifier initModeINTELParam) {  initModeINTEL = initModeINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::InitModeALTERA);
-    ret.initModeALTERA = initModeALTERA;
+    DecorationAndParamData ret(Decoration::InitModeINTEL);
+    ret.initModeINTEL = initModeINTEL;
     return ret;
   }
 };
 
 template<>
-struct DecorationParam<Decoration::ImplementInRegisterMapALTERA>
+struct DecorationParam<Decoration::ImplementInRegisterMapINTEL>
 {
-  uint32_t implementInRegisterMapALTERA;
-  DecorationParam(uint32_t implementInRegisterMapALTERAParam) {  implementInRegisterMapALTERA = implementInRegisterMapALTERAParam; }
+  uint32_t implementInRegisterMapINTEL;
+  DecorationParam(uint32_t implementInRegisterMapINTELParam) {  implementInRegisterMapINTEL = implementInRegisterMapINTELParam; }
   operator DecorationAndParamData()
   {
-    DecorationAndParamData ret(Decoration::ImplementInRegisterMapALTERA);
-    ret.implementInRegisterMapALTERA = implementInRegisterMapALTERA;
-    return ret;
-  }
-};
-
-template<>
-struct DecorationParam<Decoration::ConditionalINTEL>
-{
-  Id conditionalINTEL;
-  DecorationParam(Id conditionalINTELParam) {  conditionalINTEL = conditionalINTELParam; }
-  operator DecorationAndParamData()
-  {
-    DecorationAndParamData ret(Decoration::ConditionalINTEL);
-    ret.conditionalINTEL = conditionalINTEL;
+    DecorationAndParamData ret(Decoration::ImplementInRegisterMapINTEL);
+    ret.implementInRegisterMapINTEL = implementInRegisterMapINTEL;
     return ret;
   }
 };
@@ -2533,49 +2526,49 @@ inline DecorationAndParamData DecodeParam(const ConstIter &it, uint32_t &word)
       ret.functionDenormModeINTEL.fPDenormMode = (FPDenormMode)it.word(word+1);
       word += 2;
       break;
-    case Decoration::NumbanksALTERA:
-      ret.numbanksALTERA = (uint32_t)it.word(word);
+    case Decoration::NumbanksINTEL:
+      ret.numbanksINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::BankwidthALTERA:
-      ret.bankwidthALTERA = (uint32_t)it.word(word);
+    case Decoration::BankwidthINTEL:
+      ret.bankwidthINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::MaxPrivateCopiesALTERA:
-      ret.maxPrivateCopiesALTERA = (uint32_t)it.word(word);
+    case Decoration::MaxPrivateCopiesINTEL:
+      ret.maxPrivateCopiesINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::MaxReplicatesALTERA:
-      ret.maxReplicatesALTERA = (uint32_t)it.word(word);
+    case Decoration::MaxReplicatesINTEL:
+      ret.maxReplicatesINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::BankBitsALTERA:
-      ret.bankBitsALTERA = (uint32_t)it.word(word);
+    case Decoration::BankBitsINTEL:
+      ret.bankBitsINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::ForcePow2DepthALTERA:
-      ret.forcePow2DepthALTERA = (uint32_t)it.word(word);
+    case Decoration::ForcePow2DepthINTEL:
+      ret.forcePow2DepthINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::StridesizeALTERA:
-      ret.stridesizeALTERA = (uint32_t)it.word(word);
+    case Decoration::StridesizeINTEL:
+      ret.stridesizeINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::WordsizeALTERA:
-      ret.wordsizeALTERA = (uint32_t)it.word(word);
+    case Decoration::WordsizeINTEL:
+      ret.wordsizeINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::CacheSizeALTERA:
-      ret.cacheSizeALTERA = (uint32_t)it.word(word);
+    case Decoration::CacheSizeINTEL:
+      ret.cacheSizeINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::PrefetchALTERA:
-      ret.prefetchALTERA = (uint32_t)it.word(word);
+    case Decoration::PrefetchINTEL:
+      ret.prefetchINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::MathOpDSPModeALTERA:
-      ret.mathOpDSPModeALTERA.mode = (uint32_t)it.word(word+0);
-      ret.mathOpDSPModeALTERA.propagate = (uint32_t)it.word(word+1);
+    case Decoration::MathOpDSPModeINTEL:
+      ret.mathOpDSPModeINTEL.mode = (uint32_t)it.word(word+0);
+      ret.mathOpDSPModeINTEL.propagate = (uint32_t)it.word(word+1);
       word += 2;
       break;
     case Decoration::AliasScopeINTEL:
@@ -2586,24 +2579,24 @@ inline DecorationAndParamData DecodeParam(const ConstIter &it, uint32_t &word)
       ret.noAliasINTEL = Id::fromWord(it.word(word));
       word += 1;
       break;
-    case Decoration::InitiationIntervalALTERA:
-      ret.initiationIntervalALTERA = (uint32_t)it.word(word);
+    case Decoration::InitiationIntervalINTEL:
+      ret.initiationIntervalINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::MaxConcurrencyALTERA:
-      ret.maxConcurrencyALTERA = (uint32_t)it.word(word);
+    case Decoration::MaxConcurrencyINTEL:
+      ret.maxConcurrencyINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::PipelineEnableALTERA:
-      ret.pipelineEnableALTERA = (uint32_t)it.word(word);
+    case Decoration::PipelineEnableINTEL:
+      ret.pipelineEnableINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::BufferLocationALTERA:
-      ret.bufferLocationALTERA = (uint32_t)it.word(word);
+    case Decoration::BufferLocationINTEL:
+      ret.bufferLocationINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::IOPipeStorageALTERA:
-      ret.iOPipeStorageALTERA = (uint32_t)it.word(word);
+    case Decoration::IOPipeStorageINTEL:
+      ret.iOPipeStorageINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
     case Decoration::FunctionFloatingPointModeINTEL:
@@ -2615,50 +2608,46 @@ inline DecorationAndParamData DecodeParam(const ConstIter &it, uint32_t &word)
       ret.fPMaxErrorDecorationINTEL = (float)it.word(word);
       word += 1;
       break;
-    case Decoration::LatencyControlLabelALTERA:
-      ret.latencyControlLabelALTERA = (uint32_t)it.word(word);
+    case Decoration::LatencyControlLabelINTEL:
+      ret.latencyControlLabelINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::LatencyControlConstraintALTERA:
-      ret.latencyControlConstraintALTERA.relativeTo = (uint32_t)it.word(word+0);
-      ret.latencyControlConstraintALTERA.controlType = (uint32_t)it.word(word+1);
-      ret.latencyControlConstraintALTERA.relativeCycle = (uint32_t)it.word(word+2);
+    case Decoration::LatencyControlConstraintINTEL:
+      ret.latencyControlConstraintINTEL.relativeTo = (uint32_t)it.word(word+0);
+      ret.latencyControlConstraintINTEL.controlType = (uint32_t)it.word(word+1);
+      ret.latencyControlConstraintINTEL.relativeCycle = (uint32_t)it.word(word+2);
       word += 3;
       break;
-    case Decoration::MMHostInterfaceAddressWidthALTERA:
-      ret.mMHostInterfaceAddressWidthALTERA = (uint32_t)it.word(word);
+    case Decoration::MMHostInterfaceAddressWidthINTEL:
+      ret.mMHostInterfaceAddressWidthINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::MMHostInterfaceDataWidthALTERA:
-      ret.mMHostInterfaceDataWidthALTERA = (uint32_t)it.word(word);
+    case Decoration::MMHostInterfaceDataWidthINTEL:
+      ret.mMHostInterfaceDataWidthINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::MMHostInterfaceLatencyALTERA:
-      ret.mMHostInterfaceLatencyALTERA = (uint32_t)it.word(word);
+    case Decoration::MMHostInterfaceLatencyINTEL:
+      ret.mMHostInterfaceLatencyINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::MMHostInterfaceReadWriteModeALTERA:
-      ret.mMHostInterfaceReadWriteModeALTERA = (AccessQualifier)it.word(word);
+    case Decoration::MMHostInterfaceReadWriteModeINTEL:
+      ret.mMHostInterfaceReadWriteModeINTEL = (AccessQualifier)it.word(word);
       word += 1;
       break;
-    case Decoration::MMHostInterfaceMaxBurstALTERA:
-      ret.mMHostInterfaceMaxBurstALTERA = (uint32_t)it.word(word);
+    case Decoration::MMHostInterfaceMaxBurstINTEL:
+      ret.mMHostInterfaceMaxBurstINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::MMHostInterfaceWaitRequestALTERA:
-      ret.mMHostInterfaceWaitRequestALTERA = (uint32_t)it.word(word);
+    case Decoration::MMHostInterfaceWaitRequestINTEL:
+      ret.mMHostInterfaceWaitRequestINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
-    case Decoration::InitModeALTERA:
-      ret.initModeALTERA = (InitializationModeQualifier)it.word(word);
+    case Decoration::InitModeINTEL:
+      ret.initModeINTEL = (InitializationModeQualifier)it.word(word);
       word += 1;
       break;
-    case Decoration::ImplementInRegisterMapALTERA:
-      ret.implementInRegisterMapALTERA = (uint32_t)it.word(word);
-      word += 1;
-      break;
-    case Decoration::ConditionalINTEL:
-      ret.conditionalINTEL = Id::fromWord(it.word(word));
+    case Decoration::ImplementInRegisterMapINTEL:
+      ret.implementInRegisterMapINTEL = (uint32_t)it.word(word);
       word += 1;
       break;
     case Decoration::CacheControlLoadINTEL:
@@ -2785,39 +2774,39 @@ inline void EncodeParam(rdcarray<uint32_t> &words, const DecorationAndParamData 
       words.push_back((uint32_t)param.functionDenormModeINTEL.targetWidth);
       words.push_back((uint32_t)param.functionDenormModeINTEL.fPDenormMode);
       break;
-    case Decoration::NumbanksALTERA:
-      words.push_back((uint32_t)param.numbanksALTERA);
+    case Decoration::NumbanksINTEL:
+      words.push_back((uint32_t)param.numbanksINTEL);
       break;
-    case Decoration::BankwidthALTERA:
-      words.push_back((uint32_t)param.bankwidthALTERA);
+    case Decoration::BankwidthINTEL:
+      words.push_back((uint32_t)param.bankwidthINTEL);
       break;
-    case Decoration::MaxPrivateCopiesALTERA:
-      words.push_back((uint32_t)param.maxPrivateCopiesALTERA);
+    case Decoration::MaxPrivateCopiesINTEL:
+      words.push_back((uint32_t)param.maxPrivateCopiesINTEL);
       break;
-    case Decoration::MaxReplicatesALTERA:
-      words.push_back((uint32_t)param.maxReplicatesALTERA);
+    case Decoration::MaxReplicatesINTEL:
+      words.push_back((uint32_t)param.maxReplicatesINTEL);
       break;
-    case Decoration::BankBitsALTERA:
-      words.push_back((uint32_t)param.bankBitsALTERA);
+    case Decoration::BankBitsINTEL:
+      words.push_back((uint32_t)param.bankBitsINTEL);
       break;
-    case Decoration::ForcePow2DepthALTERA:
-      words.push_back((uint32_t)param.forcePow2DepthALTERA);
+    case Decoration::ForcePow2DepthINTEL:
+      words.push_back((uint32_t)param.forcePow2DepthINTEL);
       break;
-    case Decoration::StridesizeALTERA:
-      words.push_back((uint32_t)param.stridesizeALTERA);
+    case Decoration::StridesizeINTEL:
+      words.push_back((uint32_t)param.stridesizeINTEL);
       break;
-    case Decoration::WordsizeALTERA:
-      words.push_back((uint32_t)param.wordsizeALTERA);
+    case Decoration::WordsizeINTEL:
+      words.push_back((uint32_t)param.wordsizeINTEL);
       break;
-    case Decoration::CacheSizeALTERA:
-      words.push_back((uint32_t)param.cacheSizeALTERA);
+    case Decoration::CacheSizeINTEL:
+      words.push_back((uint32_t)param.cacheSizeINTEL);
       break;
-    case Decoration::PrefetchALTERA:
-      words.push_back((uint32_t)param.prefetchALTERA);
+    case Decoration::PrefetchINTEL:
+      words.push_back((uint32_t)param.prefetchINTEL);
       break;
-    case Decoration::MathOpDSPModeALTERA:
-      words.push_back((uint32_t)param.mathOpDSPModeALTERA.mode);
-      words.push_back((uint32_t)param.mathOpDSPModeALTERA.propagate);
+    case Decoration::MathOpDSPModeINTEL:
+      words.push_back((uint32_t)param.mathOpDSPModeINTEL.mode);
+      words.push_back((uint32_t)param.mathOpDSPModeINTEL.propagate);
       break;
     case Decoration::AliasScopeINTEL:
       words.push_back(param.aliasScopeINTEL.value());
@@ -2825,20 +2814,20 @@ inline void EncodeParam(rdcarray<uint32_t> &words, const DecorationAndParamData 
     case Decoration::NoAliasINTEL:
       words.push_back(param.noAliasINTEL.value());
       break;
-    case Decoration::InitiationIntervalALTERA:
-      words.push_back((uint32_t)param.initiationIntervalALTERA);
+    case Decoration::InitiationIntervalINTEL:
+      words.push_back((uint32_t)param.initiationIntervalINTEL);
       break;
-    case Decoration::MaxConcurrencyALTERA:
-      words.push_back((uint32_t)param.maxConcurrencyALTERA);
+    case Decoration::MaxConcurrencyINTEL:
+      words.push_back((uint32_t)param.maxConcurrencyINTEL);
       break;
-    case Decoration::PipelineEnableALTERA:
-      words.push_back((uint32_t)param.pipelineEnableALTERA);
+    case Decoration::PipelineEnableINTEL:
+      words.push_back((uint32_t)param.pipelineEnableINTEL);
       break;
-    case Decoration::BufferLocationALTERA:
-      words.push_back((uint32_t)param.bufferLocationALTERA);
+    case Decoration::BufferLocationINTEL:
+      words.push_back((uint32_t)param.bufferLocationINTEL);
       break;
-    case Decoration::IOPipeStorageALTERA:
-      words.push_back((uint32_t)param.iOPipeStorageALTERA);
+    case Decoration::IOPipeStorageINTEL:
+      words.push_back((uint32_t)param.iOPipeStorageINTEL);
       break;
     case Decoration::FunctionFloatingPointModeINTEL:
       words.push_back((uint32_t)param.functionFloatingPointModeINTEL.targetWidth);
@@ -2847,40 +2836,37 @@ inline void EncodeParam(rdcarray<uint32_t> &words, const DecorationAndParamData 
     case Decoration::FPMaxErrorDecorationINTEL:
       words.push_back((uint32_t)param.fPMaxErrorDecorationINTEL);
       break;
-    case Decoration::LatencyControlLabelALTERA:
-      words.push_back((uint32_t)param.latencyControlLabelALTERA);
+    case Decoration::LatencyControlLabelINTEL:
+      words.push_back((uint32_t)param.latencyControlLabelINTEL);
       break;
-    case Decoration::LatencyControlConstraintALTERA:
-      words.push_back((uint32_t)param.latencyControlConstraintALTERA.relativeTo);
-      words.push_back((uint32_t)param.latencyControlConstraintALTERA.controlType);
-      words.push_back((uint32_t)param.latencyControlConstraintALTERA.relativeCycle);
+    case Decoration::LatencyControlConstraintINTEL:
+      words.push_back((uint32_t)param.latencyControlConstraintINTEL.relativeTo);
+      words.push_back((uint32_t)param.latencyControlConstraintINTEL.controlType);
+      words.push_back((uint32_t)param.latencyControlConstraintINTEL.relativeCycle);
       break;
-    case Decoration::MMHostInterfaceAddressWidthALTERA:
-      words.push_back((uint32_t)param.mMHostInterfaceAddressWidthALTERA);
+    case Decoration::MMHostInterfaceAddressWidthINTEL:
+      words.push_back((uint32_t)param.mMHostInterfaceAddressWidthINTEL);
       break;
-    case Decoration::MMHostInterfaceDataWidthALTERA:
-      words.push_back((uint32_t)param.mMHostInterfaceDataWidthALTERA);
+    case Decoration::MMHostInterfaceDataWidthINTEL:
+      words.push_back((uint32_t)param.mMHostInterfaceDataWidthINTEL);
       break;
-    case Decoration::MMHostInterfaceLatencyALTERA:
-      words.push_back((uint32_t)param.mMHostInterfaceLatencyALTERA);
+    case Decoration::MMHostInterfaceLatencyINTEL:
+      words.push_back((uint32_t)param.mMHostInterfaceLatencyINTEL);
       break;
-    case Decoration::MMHostInterfaceReadWriteModeALTERA:
-      words.push_back((uint32_t)param.mMHostInterfaceReadWriteModeALTERA);
+    case Decoration::MMHostInterfaceReadWriteModeINTEL:
+      words.push_back((uint32_t)param.mMHostInterfaceReadWriteModeINTEL);
       break;
-    case Decoration::MMHostInterfaceMaxBurstALTERA:
-      words.push_back((uint32_t)param.mMHostInterfaceMaxBurstALTERA);
+    case Decoration::MMHostInterfaceMaxBurstINTEL:
+      words.push_back((uint32_t)param.mMHostInterfaceMaxBurstINTEL);
       break;
-    case Decoration::MMHostInterfaceWaitRequestALTERA:
-      words.push_back((uint32_t)param.mMHostInterfaceWaitRequestALTERA);
+    case Decoration::MMHostInterfaceWaitRequestINTEL:
+      words.push_back((uint32_t)param.mMHostInterfaceWaitRequestINTEL);
       break;
-    case Decoration::InitModeALTERA:
-      words.push_back((uint32_t)param.initModeALTERA);
+    case Decoration::InitModeINTEL:
+      words.push_back((uint32_t)param.initModeINTEL);
       break;
-    case Decoration::ImplementInRegisterMapALTERA:
-      words.push_back((uint32_t)param.implementInRegisterMapALTERA);
-      break;
-    case Decoration::ConditionalINTEL:
-      words.push_back(param.conditionalINTEL.value());
+    case Decoration::ImplementInRegisterMapINTEL:
+      words.push_back((uint32_t)param.implementInRegisterMapINTEL);
       break;
     case Decoration::CacheControlLoadINTEL:
       words.push_back((uint32_t)param.cacheControlLoadINTEL.cacheLevel);
@@ -2932,37 +2918,36 @@ inline uint16_t ExtraWordCount(const Decoration decoration)
     case Decoration::CounterBuffer: return 1;
     case Decoration::FunctionRoundingModeINTEL: return 2;
     case Decoration::FunctionDenormModeINTEL: return 2;
-    case Decoration::NumbanksALTERA: return 1;
-    case Decoration::BankwidthALTERA: return 1;
-    case Decoration::MaxPrivateCopiesALTERA: return 1;
-    case Decoration::MaxReplicatesALTERA: return 1;
-    case Decoration::BankBitsALTERA: return 1;
-    case Decoration::ForcePow2DepthALTERA: return 1;
-    case Decoration::StridesizeALTERA: return 1;
-    case Decoration::WordsizeALTERA: return 1;
-    case Decoration::CacheSizeALTERA: return 1;
-    case Decoration::PrefetchALTERA: return 1;
-    case Decoration::MathOpDSPModeALTERA: return 2;
+    case Decoration::NumbanksINTEL: return 1;
+    case Decoration::BankwidthINTEL: return 1;
+    case Decoration::MaxPrivateCopiesINTEL: return 1;
+    case Decoration::MaxReplicatesINTEL: return 1;
+    case Decoration::BankBitsINTEL: return 1;
+    case Decoration::ForcePow2DepthINTEL: return 1;
+    case Decoration::StridesizeINTEL: return 1;
+    case Decoration::WordsizeINTEL: return 1;
+    case Decoration::CacheSizeINTEL: return 1;
+    case Decoration::PrefetchINTEL: return 1;
+    case Decoration::MathOpDSPModeINTEL: return 2;
     case Decoration::AliasScopeINTEL: return 1;
     case Decoration::NoAliasINTEL: return 1;
-    case Decoration::InitiationIntervalALTERA: return 1;
-    case Decoration::MaxConcurrencyALTERA: return 1;
-    case Decoration::PipelineEnableALTERA: return 1;
-    case Decoration::BufferLocationALTERA: return 1;
-    case Decoration::IOPipeStorageALTERA: return 1;
+    case Decoration::InitiationIntervalINTEL: return 1;
+    case Decoration::MaxConcurrencyINTEL: return 1;
+    case Decoration::PipelineEnableINTEL: return 1;
+    case Decoration::BufferLocationINTEL: return 1;
+    case Decoration::IOPipeStorageINTEL: return 1;
     case Decoration::FunctionFloatingPointModeINTEL: return 2;
     case Decoration::FPMaxErrorDecorationINTEL: return 1;
-    case Decoration::LatencyControlLabelALTERA: return 1;
-    case Decoration::LatencyControlConstraintALTERA: return 3;
-    case Decoration::MMHostInterfaceAddressWidthALTERA: return 1;
-    case Decoration::MMHostInterfaceDataWidthALTERA: return 1;
-    case Decoration::MMHostInterfaceLatencyALTERA: return 1;
-    case Decoration::MMHostInterfaceReadWriteModeALTERA: return 1;
-    case Decoration::MMHostInterfaceMaxBurstALTERA: return 1;
-    case Decoration::MMHostInterfaceWaitRequestALTERA: return 1;
-    case Decoration::InitModeALTERA: return 1;
-    case Decoration::ImplementInRegisterMapALTERA: return 1;
-    case Decoration::ConditionalINTEL: return 1;
+    case Decoration::LatencyControlLabelINTEL: return 1;
+    case Decoration::LatencyControlConstraintINTEL: return 3;
+    case Decoration::MMHostInterfaceAddressWidthINTEL: return 1;
+    case Decoration::MMHostInterfaceDataWidthINTEL: return 1;
+    case Decoration::MMHostInterfaceLatencyINTEL: return 1;
+    case Decoration::MMHostInterfaceReadWriteModeINTEL: return 1;
+    case Decoration::MMHostInterfaceMaxBurstINTEL: return 1;
+    case Decoration::MMHostInterfaceWaitRequestINTEL: return 1;
+    case Decoration::InitModeINTEL: return 1;
+    case Decoration::ImplementInRegisterMapINTEL: return 1;
     case Decoration::CacheControlLoadINTEL: return 2;
     case Decoration::CacheControlStoreINTEL: return 2;
     default: break;
@@ -12107,7 +12092,7 @@ struct OpGroupNonUniformBroadcast
   {
     memcpy(this, it.words(), sizeof(*this));
   }
-  OpGroupNonUniformBroadcast(IdResultType resultType, IdResult result, IdScope execution, Id value, Id invocationId)
+  OpGroupNonUniformBroadcast(IdResultType resultType, IdResult result, IdScope execution, Id value, Id id)
       : op(Op::GroupNonUniformBroadcast)
       , wordCount(FixedWordSize)
   {
@@ -12115,7 +12100,7 @@ struct OpGroupNonUniformBroadcast
     this->result = result;
     this->execution = execution;
     this->value = value;
-    this->invocationId = invocationId;
+    this->id = id;
   }
 
   static constexpr Op OpCode = Op::GroupNonUniformBroadcast;
@@ -12126,7 +12111,7 @@ struct OpGroupNonUniformBroadcast
   IdResult result;
   IdScope execution;
   Id value;
-  Id invocationId;
+  Id id;
 };
 
 struct OpGroupNonUniformBroadcastFirst
@@ -12321,7 +12306,7 @@ struct OpGroupNonUniformShuffle
   {
     memcpy(this, it.words(), sizeof(*this));
   }
-  OpGroupNonUniformShuffle(IdResultType resultType, IdResult result, IdScope execution, Id value, Id invocationId)
+  OpGroupNonUniformShuffle(IdResultType resultType, IdResult result, IdScope execution, Id value, Id id)
       : op(Op::GroupNonUniformShuffle)
       , wordCount(FixedWordSize)
   {
@@ -12329,7 +12314,7 @@ struct OpGroupNonUniformShuffle
     this->result = result;
     this->execution = execution;
     this->value = value;
-    this->invocationId = invocationId;
+    this->id = id;
   }
 
   static constexpr Op OpCode = Op::GroupNonUniformShuffle;
@@ -12340,7 +12325,7 @@ struct OpGroupNonUniformShuffle
   IdResult result;
   IdScope execution;
   Id value;
-  Id invocationId;
+  Id id;
 };
 
 struct OpGroupNonUniformShuffleXor
@@ -13680,240 +13665,6 @@ struct OpTensorQuerySizeARM
   Id dimension;
 };
 
-struct OpGraphConstantARM
-{
-  OpGraphConstantARM(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpGraphConstantARM(IdResultType resultType, IdResult result, uint32_t graphConstantID)
-      : op(Op::GraphConstantARM)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->graphConstantID = graphConstantID;
-  }
-
-  static constexpr Op OpCode = Op::GraphConstantARM;
-  static constexpr uint16_t FixedWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  uint32_t graphConstantID;
-};
-
-struct OpGraphEntryPointARM
-{
-  OpGraphEntryPointARM(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->graph = Id::fromWord(it.word(1));
-    word = 2;
-    this->name = DecodeParam<rdcstr>(it, word);
-    this->iface = MultiParam<Id>(it, word);
-  }
-  OpGraphEntryPointARM(Id graph, rdcstr name, const rdcarray<Id> &iface = {})
-      : op(Op::GraphEntryPointARM)
-      , wordCount(MinWordSize + ExtraWordCount(name) + MultiWordCount(iface))
-  {
-    this->graph = graph;
-    this->name = name;
-    this->iface = iface;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(graph.value());
-    EncodeParam(words, name);
-    for(size_t i=0; i < iface.size(); i++)
-    {
-      words.push_back(iface[i].value());
-    }
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::GraphEntryPointARM;
-  static constexpr uint16_t MinWordSize = 3U;
-  Op op;
-  uint16_t wordCount;
-  Id graph;
-  rdcstr name;
-  rdcarray<Id> iface;
-};
-
-struct OpGraphARM
-{
-  OpGraphARM(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpGraphARM(IdResultType resultType, IdResult result)
-      : op(Op::GraphARM)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-  }
-
-  static constexpr Op OpCode = Op::GraphARM;
-  static constexpr uint16_t FixedWordSize = 3U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-};
-
-struct OpGraphInputARM
-{
-  OpGraphInputARM(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->resultType = Id::fromWord(it.word(1));
-    this->result = Id::fromWord(it.word(2));
-    this->inputIndex = Id::fromWord(it.word(3));
-    word = 4;
-    this->elementIndex = MultiParam<Id>(it, word);
-  }
-  OpGraphInputARM(IdResultType resultType, IdResult result, Id inputIndex, const rdcarray<Id> &elementIndex = {})
-      : op(Op::GraphInputARM)
-      , wordCount(MinWordSize + MultiWordCount(elementIndex))
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->inputIndex = inputIndex;
-    this->elementIndex = elementIndex;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(resultType.value());
-    words.push_back(result.value());
-    words.push_back(inputIndex.value());
-    for(size_t i=0; i < elementIndex.size(); i++)
-    {
-      words.push_back(elementIndex[i].value());
-    }
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::GraphInputARM;
-  static constexpr uint16_t MinWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id inputIndex;
-  rdcarray<Id> elementIndex;
-};
-
-struct OpGraphSetOutputARM
-{
-  OpGraphSetOutputARM(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->value = Id::fromWord(it.word(1));
-    this->outputIndex = Id::fromWord(it.word(2));
-    word = 3;
-    this->elementIndex = MultiParam<Id>(it, word);
-  }
-  OpGraphSetOutputARM(Id value, Id outputIndex, const rdcarray<Id> &elementIndex = {})
-      : op(Op::GraphSetOutputARM)
-      , wordCount(MinWordSize + MultiWordCount(elementIndex))
-  {
-    this->value = value;
-    this->outputIndex = outputIndex;
-    this->elementIndex = elementIndex;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(value.value());
-    words.push_back(outputIndex.value());
-    for(size_t i=0; i < elementIndex.size(); i++)
-    {
-      words.push_back(elementIndex[i].value());
-    }
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::GraphSetOutputARM;
-  static constexpr uint16_t MinWordSize = 3U;
-  Op op;
-  uint16_t wordCount;
-  Id value;
-  Id outputIndex;
-  rdcarray<Id> elementIndex;
-};
-
-struct OpGraphEndARM
-{
-  OpGraphEndARM(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpGraphEndARM()
-      : op(Op::GraphEndARM)
-      , wordCount(FixedWordSize)
-  {
-    // no operands
-  }
-
-  static constexpr Op OpCode = Op::GraphEndARM;
-  static constexpr uint16_t FixedWordSize = 1U;
-  Op op;
-  uint16_t wordCount;
-  // no operands
-};
-
-struct OpTypeGraphARM
-{
-  OpTypeGraphARM(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->result = Id::fromWord(it.word(1));
-    this->numInputs = (uint32_t)it.word(2);
-    word = 3;
-    this->inOutTypes = MultiParam<Id>(it, word);
-  }
-  OpTypeGraphARM(IdResult result, uint32_t numInputs, const rdcarray<Id> &inOutTypes = {})
-      : op(Op::TypeGraphARM)
-      , wordCount(MinWordSize + MultiWordCount(inOutTypes))
-  {
-    this->result = result;
-    this->numInputs = numInputs;
-    this->inOutTypes = inOutTypes;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(result.value());
-    words.push_back((uint32_t)numInputs);
-    for(size_t i=0; i < inOutTypes.size(); i++)
-    {
-      words.push_back(inOutTypes[i].value());
-    }
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::TypeGraphARM;
-  static constexpr uint16_t MinWordSize = 3U;
-  Op op;
-  uint16_t wordCount;
-  IdResult result;
-  uint32_t numInputs;
-  rdcarray<Id> inOutTypes;
-};
-
 struct OpTerminateInvocation
 {
   OpTerminateInvocation(const ConstIter &it)
@@ -14333,34 +14084,6 @@ struct OpUntypedPrefetchKHR
   bool HasCacheType() const { return wordCount > 5; }
 };
 
-struct OpFmaKHR
-{
-  OpFmaKHR(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpFmaKHR(IdResultType resultType, IdResult result, Id operand1, Id operand2, Id operand3)
-      : op(Op::FmaKHR)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->operand1 = operand1;
-    this->operand2 = operand2;
-    this->operand3 = operand3;
-  }
-
-  static constexpr Op OpCode = Op::FmaKHR;
-  static constexpr uint16_t FixedWordSize = 6U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id operand1;
-  Id operand2;
-  Id operand3;
-};
-
 struct OpSubgroupAllKHR
 {
   OpSubgroupAllKHR(const ConstIter &it)
@@ -14511,76 +14234,6 @@ struct OpSubgroupReadInvocationKHR
 };
 
 struct OpExtInstWithForwardRefsKHR; // has operands with variable sizes
-
-struct OpUntypedGroupAsyncCopyKHR
-{
-  OpUntypedGroupAsyncCopyKHR(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->resultType = Id::fromWord(it.word(1));
-    this->result = Id::fromWord(it.word(2));
-    this->execution = Id::fromWord(it.word(3));
-    this->destination = Id::fromWord(it.word(4));
-    this->source = Id::fromWord(it.word(5));
-    this->elementNumBytes = Id::fromWord(it.word(6));
-    this->numElements = Id::fromWord(it.word(7));
-    this->stride = Id::fromWord(it.word(8));
-    this->event = Id::fromWord(it.word(9));
-    word = 10;
-    this->destinationMemoryOperands = DecodeParam<MemoryAccessAndParamDatas>(it, word);
-    this->sourceMemoryOperands = DecodeParam<MemoryAccessAndParamDatas>(it, word);
-  }
-  OpUntypedGroupAsyncCopyKHR(IdResultType resultType, IdResult result, Id execution, Id destination, Id source, Id elementNumBytes, Id numElements, Id stride, Id event, MemoryAccessAndParamDatas destinationMemoryOperands = MemoryAccess::None, MemoryAccessAndParamDatas sourceMemoryOperands = MemoryAccess::None)
-      : op(Op::UntypedGroupAsyncCopyKHR)
-      , wordCount(MinWordSize + ExtraWordCount(destinationMemoryOperands) + ExtraWordCount(sourceMemoryOperands))
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->execution = execution;
-    this->destination = destination;
-    this->source = source;
-    this->elementNumBytes = elementNumBytes;
-    this->numElements = numElements;
-    this->stride = stride;
-    this->event = event;
-    this->destinationMemoryOperands = destinationMemoryOperands;
-    this->sourceMemoryOperands = sourceMemoryOperands;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(resultType.value());
-    words.push_back(result.value());
-    words.push_back(execution.value());
-    words.push_back(destination.value());
-    words.push_back(source.value());
-    words.push_back(elementNumBytes.value());
-    words.push_back(numElements.value());
-    words.push_back(stride.value());
-    words.push_back(event.value());
-    EncodeParam(words, destinationMemoryOperands);
-    EncodeParam(words, sourceMemoryOperands);
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::UntypedGroupAsyncCopyKHR;
-  static constexpr uint16_t MinWordSize = 10U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id execution;
-  Id destination;
-  Id source;
-  Id elementNumBytes;
-  Id numElements;
-  Id stride;
-  Id event;
-  MemoryAccessAndParamDatas destinationMemoryOperands;
-  MemoryAccessAndParamDatas sourceMemoryOperands;
-};
 
 struct OpTraceRayKHR
 {
@@ -15563,30 +15216,6 @@ struct OpImageBlockMatchSADQCOM
   Id blockSize;
 };
 
-struct OpBitCastArrayQCOM
-{
-  OpBitCastArrayQCOM(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpBitCastArrayQCOM(IdResultType resultType, IdResult result, Id sourceArray)
-      : op(Op::BitCastArrayQCOM)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->sourceArray = sourceArray;
-  }
-
-  static constexpr Op OpCode = Op::BitCastArrayQCOM;
-  static constexpr uint16_t FixedWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id sourceArray;
-};
-
 struct OpImageBlockMatchWindowSSDQCOM
 {
   OpImageBlockMatchWindowSSDQCOM(const ConstIter &it)
@@ -15713,80 +15342,6 @@ struct OpImageBlockMatchGatherSADQCOM
   Id referenceSampledImage;
   Id referenceCoordinates;
   Id blockSize;
-};
-
-struct OpCompositeConstructCoopMatQCOM
-{
-  OpCompositeConstructCoopMatQCOM(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpCompositeConstructCoopMatQCOM(IdResultType resultType, IdResult result, Id sourceArray)
-      : op(Op::CompositeConstructCoopMatQCOM)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->sourceArray = sourceArray;
-  }
-
-  static constexpr Op OpCode = Op::CompositeConstructCoopMatQCOM;
-  static constexpr uint16_t FixedWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id sourceArray;
-};
-
-struct OpCompositeExtractCoopMatQCOM
-{
-  OpCompositeExtractCoopMatQCOM(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpCompositeExtractCoopMatQCOM(IdResultType resultType, IdResult result, Id sourceCooperativeMatrix)
-      : op(Op::CompositeExtractCoopMatQCOM)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->sourceCooperativeMatrix = sourceCooperativeMatrix;
-  }
-
-  static constexpr Op OpCode = Op::CompositeExtractCoopMatQCOM;
-  static constexpr uint16_t FixedWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id sourceCooperativeMatrix;
-};
-
-struct OpExtractSubArrayQCOM
-{
-  OpExtractSubArrayQCOM(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpExtractSubArrayQCOM(IdResultType resultType, IdResult result, Id sourceArray, Id index)
-      : op(Op::ExtractSubArrayQCOM)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->sourceArray = sourceArray;
-    this->index = index;
-  }
-
-  static constexpr Op OpCode = Op::ExtractSubArrayQCOM;
-  static constexpr uint16_t FixedWordSize = 5U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id sourceArray;
-  Id index;
 };
 
 struct OpGroupIAddNonUniformAMD
@@ -18151,14 +17706,14 @@ struct OpExecuteCallableNV
   Id callableDataId;
 };
 
-struct OpRayQueryGetIntersectionClusterIdNV
+struct OpRayQueryGetClusterIdNV
 {
-  OpRayQueryGetIntersectionClusterIdNV(const ConstIter &it)
+  OpRayQueryGetClusterIdNV(const ConstIter &it)
   {
     memcpy(this, it.words(), sizeof(*this));
   }
-  OpRayQueryGetIntersectionClusterIdNV(IdResultType resultType, IdResult result, Id rayQuery, Id intersection)
-      : op(Op::RayQueryGetIntersectionClusterIdNV)
+  OpRayQueryGetClusterIdNV(IdResultType resultType, IdResult result, Id rayQuery, Id intersection)
+      : op(Op::RayQueryGetClusterIdNV)
       , wordCount(FixedWordSize)
   {
     this->resultType = resultType;
@@ -18167,7 +17722,7 @@ struct OpRayQueryGetIntersectionClusterIdNV
     this->intersection = intersection;
   }
 
-  static constexpr Op OpCode = Op::RayQueryGetIntersectionClusterIdNV;
+  static constexpr Op OpCode = Op::RayQueryGetClusterIdNV;
   static constexpr uint16_t FixedWordSize = 5U;
   Op op;
   uint16_t wordCount;
@@ -20446,72 +20001,6 @@ struct OpMemberDecorateString
   DecorationAndParamData decoration;
 };
 
-struct OpVariableLengthArrayINTEL
-{
-  OpVariableLengthArrayINTEL(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpVariableLengthArrayINTEL(IdResultType resultType, IdResult result, Id length)
-      : op(Op::VariableLengthArrayINTEL)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->length = length;
-  }
-
-  static constexpr Op OpCode = Op::VariableLengthArrayINTEL;
-  static constexpr uint16_t FixedWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id length;
-};
-
-struct OpSaveMemoryINTEL
-{
-  OpSaveMemoryINTEL(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpSaveMemoryINTEL(IdResultType resultType, IdResult result)
-      : op(Op::SaveMemoryINTEL)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-  }
-
-  static constexpr Op OpCode = Op::SaveMemoryINTEL;
-  static constexpr uint16_t FixedWordSize = 3U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-};
-
-struct OpRestoreMemoryINTEL
-{
-  OpRestoreMemoryINTEL(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpRestoreMemoryINTEL(Id ptr)
-      : op(Op::RestoreMemoryINTEL)
-      , wordCount(FixedWordSize)
-  {
-    this->ptr = ptr;
-  }
-
-  static constexpr Op OpCode = Op::RestoreMemoryINTEL;
-  static constexpr uint16_t FixedWordSize = 2U;
-  Op op;
-  uint16_t wordCount;
-  Id ptr;
-};
-
 struct OpLoopControlINTEL
 {
   OpLoopControlINTEL(const ConstIter &it)
@@ -20543,6 +20032,82 @@ struct OpLoopControlINTEL
   Op op;
   uint16_t wordCount;
   rdcarray<uint32_t> loopControlParameters;
+};
+
+struct OpReadPipeBlockingINTEL
+{
+  OpReadPipeBlockingINTEL(const ConstIter &it)
+  {
+    memcpy(this, it.words(), sizeof(*this));
+  }
+  OpReadPipeBlockingINTEL(IdResultType resultType, IdResult result, Id packetSize, Id packetAlignment)
+      : op(Op::ReadPipeBlockingINTEL)
+      , wordCount(FixedWordSize)
+  {
+    this->resultType = resultType;
+    this->result = result;
+    this->packetSize = packetSize;
+    this->packetAlignment = packetAlignment;
+  }
+
+  static constexpr Op OpCode = Op::ReadPipeBlockingINTEL;
+  static constexpr uint16_t FixedWordSize = 5U;
+  Op op;
+  uint16_t wordCount;
+  IdResultType resultType;
+  IdResult result;
+  Id packetSize;
+  Id packetAlignment;
+};
+
+struct OpWritePipeBlockingINTEL
+{
+  OpWritePipeBlockingINTEL(const ConstIter &it)
+  {
+    memcpy(this, it.words(), sizeof(*this));
+  }
+  OpWritePipeBlockingINTEL(IdResultType resultType, IdResult result, Id packetSize, Id packetAlignment)
+      : op(Op::WritePipeBlockingINTEL)
+      , wordCount(FixedWordSize)
+  {
+    this->resultType = resultType;
+    this->result = result;
+    this->packetSize = packetSize;
+    this->packetAlignment = packetAlignment;
+  }
+
+  static constexpr Op OpCode = Op::WritePipeBlockingINTEL;
+  static constexpr uint16_t FixedWordSize = 5U;
+  Op op;
+  uint16_t wordCount;
+  IdResultType resultType;
+  IdResult result;
+  Id packetSize;
+  Id packetAlignment;
+};
+
+struct OpFPGARegINTEL
+{
+  OpFPGARegINTEL(const ConstIter &it)
+  {
+    memcpy(this, it.words(), sizeof(*this));
+  }
+  OpFPGARegINTEL(IdResultType resultType, IdResult result, Id input)
+      : op(Op::FPGARegINTEL)
+      , wordCount(FixedWordSize)
+  {
+    this->resultType = resultType;
+    this->result = result;
+    this->input = input;
+  }
+
+  static constexpr Op OpCode = Op::FPGARegINTEL;
+  static constexpr uint16_t FixedWordSize = 4U;
+  Op op;
+  uint16_t wordCount;
+  IdResultType resultType;
+  IdResult result;
+  Id input;
 };
 
 struct OpRayQueryGetRayTMinKHR
@@ -21289,6 +20854,139 @@ struct OpArithmeticFenceEXT
   Id target;
 };
 
+struct OpTaskSequenceCreateINTEL
+{
+  OpTaskSequenceCreateINTEL(const ConstIter &it)
+  {
+    memcpy(this, it.words(), sizeof(*this));
+  }
+  OpTaskSequenceCreateINTEL(IdResultType resultType, IdResult result, Id function, uint32_t pipelined, uint32_t useStallEnableClusters, uint32_t getCapacity, uint32_t asyncCapacity)
+      : op(Op::TaskSequenceCreateINTEL)
+      , wordCount(FixedWordSize)
+  {
+    this->resultType = resultType;
+    this->result = result;
+    this->function = function;
+    this->pipelined = pipelined;
+    this->useStallEnableClusters = useStallEnableClusters;
+    this->getCapacity = getCapacity;
+    this->asyncCapacity = asyncCapacity;
+  }
+
+  static constexpr Op OpCode = Op::TaskSequenceCreateINTEL;
+  static constexpr uint16_t FixedWordSize = 8U;
+  Op op;
+  uint16_t wordCount;
+  IdResultType resultType;
+  IdResult result;
+  Id function;
+  uint32_t pipelined;
+  uint32_t useStallEnableClusters;
+  uint32_t getCapacity;
+  uint32_t asyncCapacity;
+};
+
+struct OpTaskSequenceAsyncINTEL
+{
+  OpTaskSequenceAsyncINTEL(const ConstIter &it)
+  {
+    uint32_t word = 0;(void)word;
+    this->op = OpCode;
+    this->wordCount = (uint16_t)it.size();
+    this->sequence = Id::fromWord(it.word(1));
+    word = 2;
+    this->arguments = MultiParam<Id>(it, word);
+  }
+  OpTaskSequenceAsyncINTEL(Id sequence, const rdcarray<Id> &arguments = {})
+      : op(Op::TaskSequenceAsyncINTEL)
+      , wordCount(MinWordSize + MultiWordCount(arguments))
+  {
+    this->sequence = sequence;
+    this->arguments = arguments;
+  }
+  operator Operation() const
+  {
+    rdcarray<uint32_t> words;
+    words.push_back(sequence.value());
+    for(size_t i=0; i < arguments.size(); i++)
+    {
+      words.push_back(arguments[i].value());
+    }
+    return Operation(OpCode, words);
+  }
+
+  static constexpr Op OpCode = Op::TaskSequenceAsyncINTEL;
+  static constexpr uint16_t MinWordSize = 2U;
+  Op op;
+  uint16_t wordCount;
+  Id sequence;
+  rdcarray<Id> arguments;
+};
+
+struct OpTaskSequenceGetINTEL
+{
+  OpTaskSequenceGetINTEL(const ConstIter &it)
+  {
+    memcpy(this, it.words(), sizeof(*this));
+  }
+  OpTaskSequenceGetINTEL(IdResultType resultType, IdResult result, Id sequence)
+      : op(Op::TaskSequenceGetINTEL)
+      , wordCount(FixedWordSize)
+  {
+    this->resultType = resultType;
+    this->result = result;
+    this->sequence = sequence;
+  }
+
+  static constexpr Op OpCode = Op::TaskSequenceGetINTEL;
+  static constexpr uint16_t FixedWordSize = 4U;
+  Op op;
+  uint16_t wordCount;
+  IdResultType resultType;
+  IdResult result;
+  Id sequence;
+};
+
+struct OpTaskSequenceReleaseINTEL
+{
+  OpTaskSequenceReleaseINTEL(const ConstIter &it)
+  {
+    memcpy(this, it.words(), sizeof(*this));
+  }
+  OpTaskSequenceReleaseINTEL(Id sequence)
+      : op(Op::TaskSequenceReleaseINTEL)
+      , wordCount(FixedWordSize)
+  {
+    this->sequence = sequence;
+  }
+
+  static constexpr Op OpCode = Op::TaskSequenceReleaseINTEL;
+  static constexpr uint16_t FixedWordSize = 2U;
+  Op op;
+  uint16_t wordCount;
+  Id sequence;
+};
+
+struct OpTypeTaskSequenceINTEL
+{
+  OpTypeTaskSequenceINTEL(const ConstIter &it)
+  {
+    memcpy(this, it.words(), sizeof(*this));
+  }
+  OpTypeTaskSequenceINTEL(IdResult result)
+      : op(Op::TypeTaskSequenceINTEL)
+      , wordCount(FixedWordSize)
+  {
+    this->result = result;
+  }
+
+  static constexpr Op OpCode = Op::TypeTaskSequenceINTEL;
+  static constexpr uint16_t FixedWordSize = 2U;
+  Op op;
+  uint16_t wordCount;
+  IdResult result;
+};
+
 struct OpSubgroupBlockPrefetchINTEL
 {
   OpSubgroupBlockPrefetchINTEL(const ConstIter &it)
@@ -21600,294 +21298,6 @@ struct OpBitwiseFunctionINTEL
   Id lUTIndex;
 };
 
-struct OpUntypedVariableLengthArrayINTEL
-{
-  OpUntypedVariableLengthArrayINTEL(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpUntypedVariableLengthArrayINTEL(IdResultType resultType, IdResult result, Id elementType, Id length)
-      : op(Op::UntypedVariableLengthArrayINTEL)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->elementType = elementType;
-    this->length = length;
-  }
-
-  static constexpr Op OpCode = Op::UntypedVariableLengthArrayINTEL;
-  static constexpr uint16_t FixedWordSize = 5U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id elementType;
-  Id length;
-};
-
-struct OpConditionalExtensionINTEL
-{
-  OpConditionalExtensionINTEL(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->condition = Id::fromWord(it.word(1));
-    word = 2;
-    this->name = DecodeParam<rdcstr>(it, word);
-  }
-  OpConditionalExtensionINTEL(Id condition, rdcstr name)
-      : op(Op::ConditionalExtensionINTEL)
-      , wordCount(MinWordSize + ExtraWordCount(name))
-  {
-    this->condition = condition;
-    this->name = name;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(condition.value());
-    EncodeParam(words, name);
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::ConditionalExtensionINTEL;
-  static constexpr uint16_t MinWordSize = 3U;
-  Op op;
-  uint16_t wordCount;
-  Id condition;
-  rdcstr name;
-};
-
-struct OpConditionalEntryPointINTEL
-{
-  OpConditionalEntryPointINTEL(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->condition = Id::fromWord(it.word(1));
-    this->executionModel = (ExecutionModel)it.word(2);
-    this->entryPoint = Id::fromWord(it.word(3));
-    word = 4;
-    this->name = DecodeParam<rdcstr>(it, word);
-    this->iface = MultiParam<Id>(it, word);
-  }
-  OpConditionalEntryPointINTEL(Id condition, ExecutionModel executionModel, Id entryPoint, rdcstr name, const rdcarray<Id> &iface = {})
-      : op(Op::ConditionalEntryPointINTEL)
-      , wordCount(MinWordSize + ExtraWordCount(name) + MultiWordCount(iface))
-  {
-    this->condition = condition;
-    this->executionModel = executionModel;
-    this->entryPoint = entryPoint;
-    this->name = name;
-    this->iface = iface;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(condition.value());
-    words.push_back((uint32_t)executionModel);
-    words.push_back(entryPoint.value());
-    EncodeParam(words, name);
-    for(size_t i=0; i < iface.size(); i++)
-    {
-      words.push_back(iface[i].value());
-    }
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::ConditionalEntryPointINTEL;
-  static constexpr uint16_t MinWordSize = 5U;
-  Op op;
-  uint16_t wordCount;
-  Id condition;
-  ExecutionModel executionModel;
-  Id entryPoint;
-  rdcstr name;
-  rdcarray<Id> iface;
-};
-
-struct OpConditionalCapabilityINTEL
-{
-  OpConditionalCapabilityINTEL(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpConditionalCapabilityINTEL(Id condition, Capability capability)
-      : op(Op::ConditionalCapabilityINTEL)
-      , wordCount(FixedWordSize)
-  {
-    this->condition = condition;
-    this->capability = capability;
-  }
-
-  static constexpr Op OpCode = Op::ConditionalCapabilityINTEL;
-  static constexpr uint16_t FixedWordSize = 3U;
-  Op op;
-  uint16_t wordCount;
-  Id condition;
-  Capability capability;
-};
-
-struct OpSpecConstantTargetINTEL
-{
-  OpSpecConstantTargetINTEL(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->resultType = Id::fromWord(it.word(1));
-    this->result = Id::fromWord(it.word(2));
-    this->target = (uint32_t)it.word(3);
-    word = 4;
-    this->features = MultiParam<uint32_t>(it, word);
-  }
-  OpSpecConstantTargetINTEL(IdResultType resultType, IdResult result, uint32_t target, const rdcarray<uint32_t> &features = {})
-      : op(Op::SpecConstantTargetINTEL)
-      , wordCount(MinWordSize + MultiWordCount(features))
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->target = target;
-    this->features = features;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(resultType.value());
-    words.push_back(result.value());
-    words.push_back((uint32_t)target);
-    for(size_t i=0; i < features.size(); i++)
-    {
-      words.push_back((uint32_t)features[i]);
-    }
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::SpecConstantTargetINTEL;
-  static constexpr uint16_t MinWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  uint32_t target;
-  rdcarray<uint32_t> features;
-};
-
-struct OpSpecConstantArchitectureINTEL
-{
-  OpSpecConstantArchitectureINTEL(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpSpecConstantArchitectureINTEL(IdResultType resultType, IdResult result, uint32_t category, uint32_t family, uint32_t opcode, uint32_t architecture)
-      : op(Op::SpecConstantArchitectureINTEL)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->category = category;
-    this->family = family;
-    this->opcode = opcode;
-    this->architecture = architecture;
-  }
-
-  static constexpr Op OpCode = Op::SpecConstantArchitectureINTEL;
-  static constexpr uint16_t FixedWordSize = 7U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  uint32_t category;
-  uint32_t family;
-  uint32_t opcode;
-  uint32_t architecture;
-};
-
-struct OpSpecConstantCapabilitiesINTEL
-{
-  OpSpecConstantCapabilitiesINTEL(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->resultType = Id::fromWord(it.word(1));
-    this->result = Id::fromWord(it.word(2));
-    word = 3;
-    this->capabilities = MultiParam<Capability>(it, word);
-  }
-  OpSpecConstantCapabilitiesINTEL(IdResultType resultType, IdResult result, const rdcarray<Capability> &capabilities = {})
-      : op(Op::SpecConstantCapabilitiesINTEL)
-      , wordCount(MinWordSize + MultiWordCount(capabilities))
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->capabilities = capabilities;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(resultType.value());
-    words.push_back(result.value());
-    for(size_t i=0; i < capabilities.size(); i++)
-    {
-      words.push_back((uint32_t)capabilities[i]);
-    }
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::SpecConstantCapabilitiesINTEL;
-  static constexpr uint16_t MinWordSize = 3U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  rdcarray<Capability> capabilities;
-};
-
-struct OpConditionalCopyObjectINTEL
-{
-  OpConditionalCopyObjectINTEL(const ConstIter &it)
-  {
-    uint32_t word = 0;(void)word;
-    this->op = OpCode;
-    this->wordCount = (uint16_t)it.size();
-    this->resultType = Id::fromWord(it.word(1));
-    this->result = Id::fromWord(it.word(2));
-    word = 3;
-    this->conditional_arguments = MultiParam<Id>(it, word);
-  }
-  OpConditionalCopyObjectINTEL(IdResultType resultType, IdResult result, const rdcarray<Id> &conditional_arguments = {})
-      : op(Op::ConditionalCopyObjectINTEL)
-      , wordCount(MinWordSize + MultiWordCount(conditional_arguments))
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->conditional_arguments = conditional_arguments;
-  }
-  operator Operation() const
-  {
-    rdcarray<uint32_t> words;
-    words.push_back(resultType.value());
-    words.push_back(result.value());
-    for(size_t i=0; i < conditional_arguments.size(); i++)
-    {
-      words.push_back(conditional_arguments[i].value());
-    }
-    return Operation(OpCode, words);
-  }
-
-  static constexpr Op OpCode = Op::ConditionalCopyObjectINTEL;
-  static constexpr uint16_t MinWordSize = 3U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  rdcarray<Id> conditional_arguments;
-};
-
 struct OpGroupIMulKHR
 {
   OpGroupIMulKHR(const ConstIter &it)
@@ -22190,78 +21600,6 @@ struct OpMaskedScatterINTEL
   Id ptrVector;
   uint32_t alignment;
   Id mask;
-};
-
-struct OpConvertHandleToImageINTEL
-{
-  OpConvertHandleToImageINTEL(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpConvertHandleToImageINTEL(IdResultType resultType, IdResult result, Id operand)
-      : op(Op::ConvertHandleToImageINTEL)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->operand = operand;
-  }
-
-  static constexpr Op OpCode = Op::ConvertHandleToImageINTEL;
-  static constexpr uint16_t FixedWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id operand;
-};
-
-struct OpConvertHandleToSamplerINTEL
-{
-  OpConvertHandleToSamplerINTEL(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpConvertHandleToSamplerINTEL(IdResultType resultType, IdResult result, Id operand)
-      : op(Op::ConvertHandleToSamplerINTEL)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->operand = operand;
-  }
-
-  static constexpr Op OpCode = Op::ConvertHandleToSamplerINTEL;
-  static constexpr uint16_t FixedWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id operand;
-};
-
-struct OpConvertHandleToSampledImageINTEL
-{
-  OpConvertHandleToSampledImageINTEL(const ConstIter &it)
-  {
-    memcpy(this, it.words(), sizeof(*this));
-  }
-  OpConvertHandleToSampledImageINTEL(IdResultType resultType, IdResult result, Id operand)
-      : op(Op::ConvertHandleToSampledImageINTEL)
-      , wordCount(FixedWordSize)
-  {
-    this->resultType = resultType;
-    this->result = result;
-    this->operand = operand;
-  }
-
-  static constexpr Op OpCode = Op::ConvertHandleToSampledImageINTEL;
-  static constexpr uint16_t FixedWordSize = 4U;
-  Op op;
-  uint16_t wordCount;
-  IdResultType resultType;
-  IdResult result;
-  Id operand;
 };
 
 template<typename T>

@@ -30,7 +30,7 @@
 #include "spirv_common.h"
 #include "spirv_processor.h"
 
-#if ENABLED(RDOC_RELEASE)
+#if defined(RELEASE)
 #define SPIRV_DEBUG_RDCASSERT(...) \
   do                               \
   {                                \
@@ -244,20 +244,11 @@ struct GpuSampleGatherOperation
   ShaderVariable *result = NULL;
 };
 
-enum class ShaderFeatures : uint32_t
-{
-  None = 0,
-  Derivatives = 1 << 0,
-};
-
-BITMASK_OPERATORS(ShaderFeatures);
-
 class Debugger;
 
 struct ThreadState
 {
-  ThreadState(Debugger &debug, const GlobalState &globalState, ShaderStage stage,
-              ShaderFeatures shaderFeatures);
+  ThreadState(Debugger &debug, const GlobalState &globalState);
   ~ThreadState();
 
   void EnterEntryPoint(bool useDebugState);
@@ -442,7 +433,6 @@ struct ThreadState
 private:
   void EnterFunction(const rdcarray<Id> &arguments);
   void SetDst(Id id, const ShaderVariable &val);
-  bool SetLive(Id id);
   void ProcessScopeChange(const rdcarray<Id> &oldLive, const rdcarray<Id> &newLive);
   void JumpToLabel(Id target);
   bool ReferencePointer(Id id);
@@ -463,8 +453,6 @@ private:
     AtomicStore(&atomic_pendingResultStatus, (int32_t)status);
   }
 
-  ShaderFeatures features;
-  DerivType defaultDeriveType;
   ShaderDebugState pendingDebugState;
   bool hasDebugState = false;
   uint32_t stepIndex = 0;

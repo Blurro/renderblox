@@ -57,6 +57,13 @@
 #include "scintilla/include/qt/ScintillaEdit.h"
 #include "ui_EventBrowser.h"
 
+#include <QApplication>
+#include "BufferViewer.h"
+
+#include <QElapsedTimer>
+#include <iostream>
+#include <QProgressDialog>
+
 struct EventBrowserPersistentStorage : public CustomPersistentStorage
 {
   EventBrowserPersistentStorage() : CustomPersistentStorage(rdcstr())
@@ -5254,15 +5261,36 @@ void EventBrowser::events_contextMenu(const QPoint &pos)
 
   QAction expandAll(tr("&Expand All"), this);
   QAction collapseAll(tr("&Collapse All"), this);
+  //-----------new
+  QString name = index.data(Qt::DisplayRole).toString();
+  bool containsOpaque = name.contains(QStringLiteral("OpaqueCast"), Qt::CaseInsensitive);
+  bool contains6vert = name.contains(QStringLiteral("DrawInd"), Qt::CaseInsensitive) &&
+                       name.contains(QStringLiteral("(6, 1)"), Qt::CaseInsensitive);
+
+  QAction exportMesh(tr("Export Mesh"), this);
+  exportMesh.setIcon(Icons::save());
+  QAction setRef(tr("Set Reference"), this);
+  setRef.setIcon(Icons::flag_green());
+  //-----------
   QAction toggleBookmark(tr("Toggle &Bookmark"), this);
   QAction selectCols(tr("&Select Columns..."), this);
   QAction rgpSelect(tr("Select &RGP Event"), this);
   rgpSelect.setIcon(Icons::connect());
 
-  contextMenu.addAction(&expandAll);
-  contextMenu.addAction(&collapseAll);
-  contextMenu.addAction(&toggleBookmark);
-  contextMenu.addAction(&selectCols);
+  //-----------new
+  if(contains6vert)
+  {
+    contextMenu.addAction(&setRef);
+  }
+  else
+  {
+    contextMenu.addAction(&expandAll);
+    contextMenu.addAction(&collapseAll);
+    contextMenu.addAction(&toggleBookmark);
+    contextMenu.addAction(&selectCols);
+
+    contextMenu.addAction(&exportMesh);
+  }    //-----------
 
   expandAll.setIcon(Icons::arrow_out());
   collapseAll.setIcon(Icons::arrow_in());
@@ -5272,6 +5300,245 @@ void EventBrowser::events_contextMenu(const QPoint &pos)
   expandAll.setEnabled(index.isValid() && ui->events->model()->rowCount(index) > 0);
   collapseAll.setEnabled(expandAll.isEnabled());
   toggleBookmark.setEnabled(m_Ctx.IsCaptureLoaded());
+
+  //-----------new
+  exportMesh.setEnabled(index.isValid() && containsOpaque);
+  setRef.setEnabled(index.isValid() && contains6vert);
+
+  QObject::connect(&setRef, &QAction::triggered, [this, index]() {
+    this->referenceEID = index.sibling(index.row(), 1).data(Qt::DisplayRole).toUInt();
+    std::cout << "Set reference EID to " << this->referenceEID << "\n";
+  });
+
+  QObject::connect(&exportMesh, &QAction::triggered, [this, index]() {
+    if(this->referenceEID < 0)
+    {
+      QMessageBox::warning(nullptr, QStringLiteral("Error"),
+                           QStringLiteral("Set the reference 6 vertices model first!"));
+      return;
+    }
+
+    QModelIndex container = index;
+    int count = container.model()->rowCount(container);
+
+    if(count == 0)
+    {
+      std::cout << "no children under selected event\n";
+      return;
+    }
+
+    std::vector<uint32_t> eids;
+    for(int i = 0; i < count; i++)
+    {
+      QModelIndex child = container.child(i, 1);    // eid column
+      QString t = child.data(Qt::DisplayRole).toString();
+      bool ok = false;
+      uint32_t eid = t.toUInt(&ok);
+      if(ok && eid > 0)
+        eids.push_back(eid);
+    }
+
+    if(eids.empty())
+    {
+      std::cout << "no numeric EIDs found in children\n";
+      return;
+    }
+
+    std::cout << "found " << eids.size() << " real child events\n";
+
+    // export reference first
+    SelectEvent(this->referenceEID);
+    QString name = index.data(Qt::DisplayRole).toString();
+    if(name.contains(QStringLiteral("(6, 1)"), Qt::CaseInsensitive))
+    {
+      QMessageBox::warning(nullptr, QStringLiteral("Error"),
+                           QStringLiteral("Reference no longer valid! Set it again"));
+      return;
+    }
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    BufferViewer *rbv = nullptr;
+    for(QWidget *w : qApp->allWidgets())
+      if((rbv = qobject_cast<BufferViewer *>(w)))
+        break;
+    // rbv->setExportPath(QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/referenceverts"));
+    GUIInvoke::call(this, [rbv]() {
+      rbv->exportDataCustom(QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/referenceverts"),
+                            std::make_shared<int>(0), 1, []() {});
+    });
+
+    // locate QModelIndex for referenceEID
+    QModelIndex refIdx;
+    const QAbstractItemModel *model = index.model();
+    std::function<void(const QModelIndex &)> findRef = [&](const QModelIndex &parent) {
+      if(refIdx.isValid())
+        return;
+      for(int r = 0; r < model->rowCount(parent); r++)
+      {
+        QModelIndex eidIdx = model->index(r, 1, parent);
+        bool ok = false;
+        if(eidIdx.data(Qt::DisplayRole).toString().toUInt(&ok) == (uint32_t)this->referenceEID && ok)
+        {
+          refIdx = eidIdx;
+          return;
+        }
+        findRef(model->index(r, 0, parent));
+      }
+    };
+    findRef(QModelIndex());
+
+    // clear out existing exports
+    int deletidx = 0;
+    while(true)
+    {
+      QString baseOut =
+          QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/robloxmesh_out%1").arg(deletidx);
+      QString baseIn =
+          QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/robloxmesh_in%1").arg(deletidx);
+
+      QString outCsv = baseOut + QStringLiteral(".csv");
+      QString outBin = baseOut + QStringLiteral(".bin");
+      QString inCsv = baseIn + QStringLiteral(".csv");
+      QString inBin = baseIn + QStringLiteral(".bin");
+      // if none of the four exist, finish
+      if(!QFileInfo::exists(outCsv) && !QFileInfo::exists(outBin) && !QFileInfo::exists(inCsv) &&
+         !QFileInfo::exists(inBin))
+      {
+        break;
+      }
+      QFile::remove(outCsv);
+      QFile::remove(outBin);
+      QFile::remove(inCsv);
+      QFile::remove(inBin);
+      deletidx++;
+    }
+
+    // create a shared pointer for the dialog so it lives across all exports
+    auto progressDialog = std::make_shared<QProgressDialog>();
+    progressDialog->setCancelButton(nullptr);
+    progressDialog->setWindowFlags(progressDialog->windowFlags() & ~Qt::WindowCloseButtonHint & ~Qt::WindowContextHelpButtonHint);
+    progressDialog->setWindowTitle(QStringLiteral("RenderDoc Roblox"));
+    progressDialog->setLabelText(tr("Exporting data..."));
+    progressDialog->setRange(0, (int)eids.size());
+    progressDialog->setModal(true);
+    progressDialog->show();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+    // select first sibling to ref eid and export all cubes
+    QModelIndex parent = refIdx.parent();
+    for(int i = 0; i < model->rowCount(parent); i++)
+    {
+      QModelIndex sib = model->index(i, 1, parent);
+      bool ok = false;
+      uint32_t eid = sib.data(Qt::DisplayRole).toString().toUInt(&ok);
+      if(ok && eid != (uint32_t)this->referenceEID)
+      {
+        if(SelectEvent(eid))
+        {
+          QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+          BufferViewer *rbv = nullptr;
+          for(QWidget *w : qApp->allWidgets())
+            if((rbv = qobject_cast<BufferViewer *>(w)))
+              break;
+
+          if(rbv)
+          {
+            QModelIndex nameIdx = model->index(i, 0, parent);
+            QString name = nameIdx.data(Qt::DisplayRole).toString();
+            QRegularExpression re(QStringLiteral(".*\\((\\d+)\\s*,\\s*(\\d+)\\)"));
+            QRegularExpressionMatch match = re.match(name);
+            int instanceCount = match.captured(2).toInt();
+            rbv->SelectSiblingAndDumpVSPositions(refIdx, this->referenceEID, instanceCount);
+          }
+        }
+        break;
+      }
+    }
+
+    // recursive to export sequentially
+    auto exportidx = std::make_shared<int>(0);
+    auto exportNext = std::make_shared<std::function<void(int)>>();
+
+    *exportNext = [this, eids, exportNext, exportidx, progressDialog](int idx) {
+      if(idx >= (int)eids.size())
+      {
+        progressDialog->setLabelText(QStringLiteral("Building FBX..."));
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+        QString exePath =
+            QCoreApplication::applicationDirPath() + QStringLiteral("/ProcessCSV.exe");
+        QString arg = QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/robloxmesh");
+
+        // create process on the heap so it survives
+        QProcess *p = new QProcess(this);
+        p->setProcessChannelMode(QProcess::MergedChannels);    // merge stdout + stderr
+
+        QObject::connect(p, &QProcess::readyReadStandardOutput, [p]() {
+          QByteArray out = p->readAllStandardOutput();
+          std::cout << out.constData();
+        });
+        QObject::connect(
+            p, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+            this, [progressDialog, p](int, QProcess::ExitStatus) {
+              progressDialog->reset();
+              QMessageBox::information(nullptr, QStringLiteral("Done"), QStringLiteral("Created FBX!"));
+              p->deleteLater();
+            });
+        p->start(exePath, QStringList() << arg);
+        return;
+      }
+
+      progressDialog->setValue(idx); //increment
+      uint32_t eid = eids[idx];
+      //std::cout << "selecting eid " << eid << "\n";
+
+      if(eid == (uint32_t)this->referenceEID)
+      {
+        (*exportNext)(idx + 1);
+        return;
+      }
+
+      if(!SelectEvent(eid))
+      {
+        std::cout << "failed to select eid\n";
+        (*exportNext)(idx + 1);
+        return;
+      }
+
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+      // find a safe pointer to BufferViewer
+      QPointer<BufferViewer> bv;
+      for(QWidget *w : qApp->allWidgets())
+      {
+        if(auto cast = qobject_cast<BufferViewer *>(w))
+        {
+          bv = cast;
+          break;
+        }
+      }
+      if(!bv)
+      {
+        (*exportNext)(idx + 1);
+        return;
+      }
+
+      int totalEids = (int)eids.size();
+
+      GUIInvoke::call(this, [bv, exportNext, idx, exportidx, totalEids]() {
+        QString name = QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/robloxmesh");
+
+        bv->exportDataCustom(name, exportidx, totalEids, [idx, exportNext, exportidx]() {
+          //std::cout << "finished exporting mesh " << idx << "\n";
+          (*exportidx)++;
+          (*exportNext)(idx + 1);
+        });
+      });
+    };
+
+    (*exportNext)(0);
+  });
+  //-----------
 
   QObject::connect(&expandAll, &QAction::triggered,
                    [this, index]() { ui->events->expandAll(index); });

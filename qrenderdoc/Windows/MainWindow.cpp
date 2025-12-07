@@ -1211,7 +1211,7 @@ void MainWindow::SetTitle(const QString &filename)
   if(RENDERDOC_STABLE_BUILD)
     text += lit(FULL_VERSION_STRING);
   else
-    text += tr("Unstable %1 Build (%2 - %3)")
+    text += tr("Roblox Build (%2 - %3)")
                 .arg(RENDERDOC_IsReleaseBuild() ? lit("Release") : lit("Development"))
                 .arg(lit(FULL_VERSION_STRING))
                 .arg(QString::fromLatin1(RENDERDOC_GetCommitHash()));

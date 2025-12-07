@@ -140,7 +140,7 @@ ResourceInspector::ResourceInspector(ICaptureContext &ctx, QWidget *parent)
 {
   ui->setupUi(this);
 
-  SetResourceNameDisplay(tr("No Resource Selected"));
+  SetResourceNameDisplay(tr("Welcome to Blurro's RenderDoc fork for Roblox!"));
 
   ui->resetName->hide();
   ui->resourceNameEdit->hide();

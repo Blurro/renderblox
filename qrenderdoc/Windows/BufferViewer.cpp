@@ -45,6 +45,14 @@
 #include "Windows/Dialogs/AxisMappingDialog.h"
 #include "ui_BufferViewer.h"
 
+#include <set>
+
+#include <algorithm>    // for std::min
+#include <cstdint>      // for uint32_t
+#include <iostream>     // for std::cout
+
+#include <iostream>
+
 struct FixedVarTag
 {
   FixedVarTag() = default;
@@ -3600,7 +3608,6 @@ void BufferViewer::OnEventChanged(uint32_t eventId)
 
         RT_FetchVertexPipeData(r, m_Ctx, bufdata);
       }
-
       if(!me)
         return;
     }
@@ -6336,15 +6343,81 @@ void BufferViewer::exportCSV(QTextStream &ts, const QString &prefix, RDTreeWidge
   }
 }
 
-void BufferViewer::exportData(const BufferExport &params)
+//------------new
+void BufferViewer::SelectSiblingAndDumpVSPositions(const QModelIndex &, uint32_t, int instanceCount)
 {
+  ShowMeshData(MeshDataStage::VSOut);
+  QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+  auto idx = std::make_shared<int>(0);
+  auto doNext = std::make_shared<std::function<void()>>();
+
+  *doNext = [this, instanceCount, idx, doNext]() {
+    if(*idx >= instanceCount)
+      return;    // finished all instances, return to caller
+
+    SetCurrentInstance(*idx);
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+    QString path = QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/datablock%1").arg(*idx);
+
+    exportDataCustom(path, std::make_shared<int>(0), 1, [idx, doNext]() {
+      (*idx)++;
+      (*doNext)();    // recurse to next instance
+    });
+  };
+  (*doNext)();    // start the recursion
+}
+
+void BufferViewer::exportDataCustom(const QString &basePath, std::shared_ptr<int> exportIdxPtr,
+                                    int totalEids, std::function<void()> allDone)
+{
+  bool appendIndex = (totalEids > 1);
+  auto remaining = std::make_shared<int>(appendIndex ? 4 : 1);
+  auto oneDone = [remaining, allDone]() {
+    (*remaining)--;
+    if(*remaining == 0 && allDone)
+    {
+      allDone();
+    }
+  };
+
+   BufferExport p1(BufferExport::CSV);
+   BufferExport p2(BufferExport::RawBytes);
+
+    // vs out
+    QString outBin = basePath + (appendIndex ? QStringLiteral("_out%1").arg(*exportIdxPtr) : QStringLiteral("")) + QStringLiteral(".bin");
+    exportData(p2, outBin, exportIdxPtr, totalEids, oneDone, ui->out1Table);
+
+    // skip vs in bin/csv and vs out csv entirely if reference vertices
+    if(appendIndex)
+    {
+      QString outCsv = basePath + QStringLiteral("_out%1.csv").arg(*exportIdxPtr);
+      exportData(p1, outCsv, exportIdxPtr, totalEids, oneDone, ui->out1Table);
+
+      QString inCsv = basePath + QStringLiteral("_in%1.csv").arg(*exportIdxPtr);
+      QString inBin = basePath + QStringLiteral("_in%1.bin").arg(*exportIdxPtr);
+
+      exportData(p1, inCsv, exportIdxPtr, totalEids, oneDone, ui->inTable);
+      exportData(p2, inBin, exportIdxPtr, totalEids, oneDone, ui->inTable);
+    }
+}
+
+void BufferViewer::exportData(const BufferExport &params, const QString &forcedName,
+                              std::shared_ptr<int> exportIdxPtr, int totalEids,
+                              std::function<void()> done, QTableView *overrideView)
+{
+  QTableView *view = overrideView ? overrideView : m_CurView;
+  BufferItemModel *model = (BufferItemModel *)view->model();
+  const BufferConfiguration &config = model->getConfig();
+
   if(!m_Ctx.IsCaptureLoaded())
     return;
 
   if(!m_Ctx.CurAction())
     return;
 
-  if(!m_CurView && !m_CurFixed)
+  if(!view && !m_CurFixed)
     return;
 
   QString filter;
@@ -6360,9 +6433,13 @@ void BufferViewer::exportData(const BufferExport &params)
     title = tr("Export buffer to bytes");
   }
 
-  QString filename =
-      RDDialog::getSaveFileName(this, title, QString(), tr("%1;;All files (*)").arg(filter));
+  //-------hijacking with hardcoded path
+  QString filename = forcedName;
 
+  if(filename.isEmpty())    // else og behavior
+  {
+    filename = RDDialog::getSaveFileName(this, title, QString(), tr("%1;;All files (*)").arg(filter));
+  }
   if(filename.isEmpty())
     return;
 
@@ -6390,11 +6467,11 @@ void BufferViewer::exportData(const BufferExport &params)
     ANALYTIC_SET(Export.RawBuffer, true);
   }
 
-  if(m_CurView)
+  if(view)
   {
-    BufferItemModel *model = (BufferItemModel *)m_CurView->model();
+    BufferItemModel *model = (BufferItemModel *)view->model();
 
-    LambdaThread *exportThread = new LambdaThread([this, params, model, f]() {
+    LambdaThread *exportThread = new LambdaThread([this, params, model, f, done]() {
       if(params.format == BufferExport::RawBytes)
       {
         const BufferConfiguration &config = model->getConfig();
@@ -6426,36 +6503,43 @@ void BufferViewer::exportData(const BufferExport &params)
             }
           }
         }
-        else
+        else // previous doesnt appear to run just this else it seems - blurro
         {
-          // cache column data for the inner loop
           QVector<CachedElData> cache;
-
           CacheDataForIteration(cache, config.columns, config.props, config.buffers,
                                 config.curInstance);
 
-          // go row by row, finding the start of the row and dumping out the elements using their
-          // offset and sizes
+          // ------------- new, filter to only necessary columns (will match csv header) - blurro
+          QVector<CachedElData> filtered;
+          filtered.reserve(cache.count());
+          for(const CachedElData &d : cache)
+          {
+            const ShaderConstant *el = d.el;
+            QString name = QString::fromUtf8(el->name.c_str());
+            if(name.startsWith(QStringLiteral("POSITION")) ||
+               name.startsWith(QStringLiteral("SV_Position")) ||
+               name.startsWith(QStringLiteral("NORMAL")) ||
+               name.startsWith(QStringLiteral("TEXCOORD0")))
+            {
+              filtered.push_back(d);
+            }
+          }
+
+          // go row by row dumping the elements
           for(int i = 0; i < model->rowCount(); i++)
           {
-            // manually calculate the index so that we get the real offset (not the displayed
-            // offset)
-            // in the case of vertex output.
             uint32_t idx = i;
 
             if(config.indices && config.indices->hasData())
             {
               idx = CalcIndex(config.indices, i, config.baseVertex, config.primRestart);
-
-              // completely omit primitive restart indices
               if(config.primRestart && idx == config.primRestart)
                 continue;
             }
 
-            for(int col = 0; col < cache.count(); col++)
+            for(int col = 0; col < filtered.count(); col++)
             {
-              const CachedElData &d = cache[col];
-              const ShaderConstant *el = d.el;
+              const CachedElData &d = filtered[col];
               const BufferElementProperties *prop = d.prop;
 
               if(d.data)
@@ -6472,7 +6556,6 @@ void BufferViewer::exportData(const BufferExport &params)
                 }
               }
 
-              // if we didn't continue above, something was wrong, so write nulls
               f->write(d.nulls);
             }
           }
@@ -6480,50 +6563,46 @@ void BufferViewer::exportData(const BufferExport &params)
       }
       else if(params.format == BufferExport::CSV)
       {
-        // otherwise we need to iterate over all the data ourselves
         const BufferConfiguration &config = model->getConfig();
 
         QTextStream s(f);
 
+        // ----------------- new, header only writes certain columns (bytes export filtered the same)
         for(int i = 0; i < model->columnCount(); i++)
         {
-          s << model->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();
+          QString h = model->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();
 
-          if(i + 1 < model->columnCount())
-            s << ", ";
+          if(!(h.startsWith(QStringLiteral("POSITION")) ||
+               h.startsWith(QStringLiteral("SV_Position")) ||
+               h.startsWith(QStringLiteral("NORMAL")) ||
+               h.startsWith(QStringLiteral("TEXCOORD0"))))
+          {
+            continue;
+          }
+
+          s << h << ", ";
         }
-
         s << "\n";
 
         if(m_MeshView || !m_IsBuffer || config.buffers[0]->size() >= m_ByteSize)
         {
-          // if there's no pagination to worry about, dump using the model's data()
+          // ------------ new blurro csv export edit: ONLY export IDX
+          int idxCol = -1;
+          for(int c = 0; c < model->columnCount(); c++)
+          {
+            if(model->headerData(c, Qt::Horizontal, Qt::DisplayRole).toString() ==
+               QStringLiteral("IDX"))
+            {
+              idxCol = c;
+              break;
+            }
+          }
           for(int row = 0; row < model->rowCount(); row++)
           {
-            for(int col = 0; col < model->columnCount(); col++)
-            {
-              QList<QString> lines =
-                  model->data(model->index(row, col), Qt::DisplayRole).toString().split(lit("\n"));
-              bool quote = (lines.count() > 1);
-              if(quote)
-                s << "\"";
-              for(int l = 0; l < lines.count(); l++)
-              {
-                s << lines[l].trimmed();
-                if(l + 1 < lines.size())
-                  s << "\n";
-              }
-              if(quote)
-                s << "\"";
-
-              if(col + 1 < model->columnCount())
-                s << ", ";
-            }
-
-            s << "\n";
+            s << model->data(model->index(row, idxCol), Qt::DisplayRole).toString() << "\n";
           }
         }
-        else
+        else // this doesnt appear to run? lol - blurro
         {
           // write 64k rows at a time
           ResourceId buff = m_BufferID;
@@ -6635,8 +6714,10 @@ void BufferViewer::exportData(const BufferExport &params)
     });
     exportThread->start();
 
-    ShowProgressDialog(this, tr("Exporting data"),
-                       [exportThread]() { return !exportThread->isRunning(); });
+    // ---------------new, no more export dialog it takes far longer with it enabled
+    while(exportThread->isRunning())
+      QCoreApplication::processEvents();
+    //ShowProgressDialog(this, tr("Exporting data (%1/%2)").arg(*exportIdxPtr + 1).arg(totalEids), [exportThread]() { return !exportThread->isRunning(); });
 
     exportThread->deleteLater();
   }
@@ -6678,6 +6759,44 @@ void BufferViewer::exportData(const BufferExport &params)
 
     delete f;
   }
+  // csv retry check
+  if(filename.endsWith(QStringLiteral(".csv"), Qt::CaseInsensitive))
+  {
+    QFile checkFile(filename);
+    if(checkFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      QTextStream ts(&checkFile);
+      QString line1 = ts.readLine();    // first line
+      QString line2 = ts.readLine();    // second line (may be empty or missing)
+
+      bool missing = line2.isNull();
+      bool blank = line2.trimmed().isEmpty();
+
+      if(missing || blank)
+      {
+        std::cout << "retrying csv export due to empty csv written\n";
+        QTimer::singleShot(100, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
+          exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
+        });
+        return;
+      }
+    }
+  }
+  // bin retry check
+  QString binFile = filename;
+  if(binFile.endsWith(QStringLiteral(".bin"), Qt::CaseInsensitive))
+  {
+    QFile fb(binFile);
+    if(fb.size() < 4)
+    {
+      std::cout << "retrying bin export due to empty bin written\n";
+      QTimer::singleShot(100, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
+        exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
+      });
+      return;
+    }
+  }
+  done();    //---------------- blurro callback
 }
 
 void BufferViewer::debugVertex()

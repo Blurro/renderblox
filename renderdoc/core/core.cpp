@@ -407,8 +407,7 @@ RenderDoc::RenderDoc()
   m_FocusKeys.push_back(eRENDERDOC_Key_F11);
 
   m_CaptureKeys.clear();
-  m_CaptureKeys.push_back(eRENDERDOC_Key_F12);
-  m_CaptureKeys.push_back(eRENDERDOC_Key_PrtScrn);
+  m_CaptureKeys.push_back(eRENDERDOC_Key_F10);
 
   m_ExHandler = NULL;
 
@@ -1088,7 +1087,6 @@ rdcstr RenderDoc::GetOverlayText(RDCDriver driver, DeviceOwnedWindow devWnd, uin
 {
   bool activeWindow;
   const bool capturesEnabled = (flags & eOverlay_CaptureDisabled) == 0;
-
   uint32_t overlay = GetOverlayBits();
 
   RDCDriver activeDriver = RDCDriver::Unknown;
@@ -1124,85 +1122,39 @@ rdcstr RenderDoc::GetOverlayText(RDCDriver driver, DeviceOwnedWindow devWnd, uin
   if(activeDriver == RDCDriver::Unknown)
     activeDriver = driver;
 
-  // example layout:
-  //
-  // Capturing D3D11.  Frame: 1234. 33ms (30 FPS)
-  // F12, PrtScrn to capture. 3 Captures saved.
-  // Captured frame 1200.
-  //
-  // Frame number, FPS, capture list are optional. If capture list is disabled
-  // the second line still displays the keys as long as capturing is allowed.
-  // if capturing is disabled, only the first line displays.
-  //
-  // On platforms without keyboards, the keys are replaced by a remote access connection status
-  // message.
-  //
-  // with multiple windows the active window will look like:
-  //
-  // Capturing D3D11.  Window 1 active. Frame: 1234. 33ms (30 FPS)
-  // F12, PrtScrn to capture. 3 Captures saved.
-  // Captured frame 1200.
-  //
-  // Inactive windows will look like:
-  //
-  // Capturing D3D11.  Window 1 active.
-  // F11 to cycle. OpenGL window 2.
+  // compute FPS condition first
+  const double frameTime = m_FrameTimer.GetAvgFrameTime();
+  const bool showFPS = (overlay & eRENDERDOC_Overlay_FrameRate) && frameTime >= 0.0001 && activeWindow;
 
-  rdcstr overlayText = ToStr(activeDriver) + ".";
+  // if FPS block wouldn't appear, don't build anything
+  if(!showFPS)
+    return rdcstr();    // completely blank
 
-  // pad this so it's the same length regardless of API length
-  while(overlayText.length() < 8)
-    overlayText.push_back(' ');
+  rdcstr overlayText = "Capturing game.";
 
-  overlayText = "Capturing " + overlayText;
+  if(activeWindow && (overlay & eRENDERDOC_Overlay_FrameNumber))
+    overlayText += StringFormat::Fmt(" Frame: %d.", frameNumber);
 
-  if(numWindows > 1)
-  {
-    if(activeIdx >= 0)
-      overlayText += StringFormat::Fmt(" Window %d active.", activeIdx);
-    else
-      overlayText += " No window active.";
-  }
-
+  const double fps = 1000.0 / RDCMAX(0.01, frameTime);
   if(activeWindow)
   {
-    if(overlay & eRENDERDOC_Overlay_FrameNumber)
-      overlayText += StringFormat::Fmt(" Frame: %d.", frameNumber);
+    if(frameTime < 1.0)
+      overlayText += StringFormat::Fmt(" %.2lf ms", frameTime);
+    else
+      overlayText += StringFormat::Fmt(" %d ms", int(frameTime));
 
-    if(overlay & eRENDERDOC_Overlay_FrameRate)
-    {
-      const double frameTime = m_FrameTimer.GetAvgFrameTime();
-      // max with 0.01ms so that we don't divide by zero
-      const double fps = 1000.0f / RDCMAX(0.01, frameTime);
-
-      if(frameTime < 0.0001)
-      {
-        overlayText += " --- ms (--- FPS)";
-      }
-      else
-      {
-        // only display frametime fractions if it's relevant (sub-integer frame time or FPS)
-
-        if(frameTime < 1.0)
-          overlayText += StringFormat::Fmt(" %.2lf ms", m_FrameTimer.GetAvgFrameTime());
-        else
-          overlayText += StringFormat::Fmt(" %d ms", int(m_FrameTimer.GetAvgFrameTime()));
-
-        if(fps < 1.0)
-          overlayText += StringFormat::Fmt(" (%.2lf FPS)", fps);
-        else
-          overlayText += StringFormat::Fmt(" (%d FPS)", int(fps));
-      }
-    }
+    if(fps < 1.0)
+      overlayText += StringFormat::Fmt(" (%.2lf FPS)", fps);
+    else
+      overlayText += StringFormat::Fmt(" (%d FPS)", int(fps));
   }
 
   overlayText += "\n";
 
+
 #if ENABLED(RDOC_DEVEL)
-  {
-    overlayText += StringFormat::Fmt("%llu chunks - %.2f MB\n", Chunk::NumLiveChunks(),
-                                     float(Chunk::TotalMem()) / 1024.0f / 1024.0f);
-  }
+  overlayText += StringFormat::Fmt("%llu chunks - %.2f MB\n", Chunk::NumLiveChunks(),
+                                   float(Chunk::TotalMem()) / 1024.0f / 1024.0f);
 #endif
 
   if(capturesEnabled)
@@ -1210,32 +1162,27 @@ rdcstr RenderDoc::GetOverlayText(RDCDriver driver, DeviceOwnedWindow devWnd, uin
     if(activeWindow)
     {
       rdcarray<RENDERDOC_InputButton> keys = GetCaptureKeys();
-
       if(Keyboard::PlatformHasKeyInput())
       {
         for(size_t i = 0; i < keys.size(); i++)
         {
           if(i > 0)
             overlayText += ", ";
-
           overlayText += ToStr(keys[i]);
         }
-
         if(!keys.empty())
           overlayText += " to capture.";
       }
       else
       {
-        if(IsTargetControlConnected())
-          overlayText += "Connected by " + GetTargetControlUsername() + ".";
-        else
-          overlayText += "No remote access connection.";
+        overlayText += IsTargetControlConnected()
+                           ? "Connected by " + GetTargetControlUsername() + "."
+                           : "No remote access connection.";
       }
 
       if(overlay & eRENDERDOC_Overlay_CaptureList)
       {
         overlayText += StringFormat::Fmt(" %d Captures saved.\n", (uint32_t)m_Captures.size());
-
         uint64_t now = Timing::GetUnixTimestamp();
         for(size_t i = 0; i < m_Captures.size(); i++)
         {
@@ -1252,26 +1199,22 @@ rdcstr RenderDoc::GetOverlayText(RDCDriver driver, DeviceOwnedWindow devWnd, uin
     else
     {
       rdcarray<RENDERDOC_InputButton> keys = GetFocusKeys();
-
       if(Keyboard::PlatformHasKeyInput())
       {
         for(size_t i = 0; i < keys.size(); i++)
         {
           if(i > 0)
             overlayText += ", ";
-
           overlayText += ToStr(keys[i]);
         }
-
         if(!keys.empty())
           overlayText += " to cycle.";
       }
       else
       {
-        if(IsTargetControlConnected())
-          overlayText += "Connected by " + GetTargetControlUsername() + ".";
-        else
-          overlayText += "No remote access connection.";
+        overlayText += IsTargetControlConnected()
+                           ? "Connected by " + GetTargetControlUsername() + "."
+                           : "No remote access connection.";
       }
 
       if(curIdx >= 0)

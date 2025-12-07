@@ -1,12 +1,28 @@
 {
   "copyright" : [
-    "Copyright: 2014-2024 The Khronos Group Inc.",
-    "License: MIT",
+    "Copyright (c) 2014-2024 The Khronos Group Inc.",
     "",
-    "MODIFICATIONS TO THIS FILE MAY MEAN IT NO LONGER ACCURATELY REFLECTS",
-    "KHRONOS STANDARDS. THE UNMODIFIED, NORMATIVE VERSIONS OF KHRONOS",
-    "SPECIFICATIONS AND HEADER INFORMATION ARE LOCATED AT",
-    "https://www.khronos.org/registry/"
+    "Permission is hereby granted, free of charge, to any person obtaining a copy",
+    "of this software and/or associated documentation files (the \"Materials\"),",
+    "to deal in the Materials without restriction, including without limitation",
+    "the rights to use, copy, modify, merge, publish, distribute, sublicense,",
+    "and/or sell copies of the Materials, and to permit persons to whom the",
+    "Materials are furnished to do so, subject to the following conditions:",
+    "",
+    "The above copyright notice and this permission notice shall be included in",
+    "all copies or substantial portions of the Materials.",
+    "",
+    "MODIFICATIONS TO THIS FILE MAY MEAN IT NO LONGER ACCURATELY REFLECTS KHRONOS",
+    "STANDARDS. THE UNMODIFIED, NORMATIVE VERSIONS OF KHRONOS SPECIFICATIONS AND",
+    "HEADER INFORMATION ARE LOCATED AT https://www.khronos.org/registry/ ",
+    "",
+    "THE MATERIALS ARE PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS",
+    "OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,",
+    "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL",
+    "THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER",
+    "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING",
+    "FROM,OUT OF OR IN CONNECTION WITH THE MATERIALS OR THE USE OR OTHER DEALINGS",
+    "IN THE MATERIALS."
   ],
   "magic_number" : "0x07230203",
   "major_version" : 1,
@@ -115,10 +131,6 @@
     {
       "tag"     : "Tensor",
       "heading" : "Tensor Instructions"
-    },
-    {
-      "tag"     : "Graph",
-      "heading" : "Graph Instructions"
     },
     {
       "tag"     : "Reserved",
@@ -1359,7 +1371,6 @@
         { "kind" : "IdResult" },
         { "kind" : "IdRef",        "name" : "Value" }
       ],
-      "capabilities" : [ "Shader" ],
       "version": "1.0"
     },
     {
@@ -3919,7 +3930,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope", "name" : "Execution" },
         { "kind" : "IdRef", "name" : "Value" },
-        { "kind" : "IdRef", "name" : "Invocation Id" }
+        { "kind" : "IdRef", "name" : "Id" }
       ],
       "capabilities" : [ "GroupNonUniformBallot" ],
       "version" : "1.3"
@@ -4026,7 +4037,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope", "name" : "Execution" },
         { "kind" : "IdRef", "name" : "Value" },
-        { "kind" : "IdRef", "name" : "Invocation Id" }
+        { "kind" : "IdRef", "name" : "Id" }
       ],
       "capabilities" : [ "GroupNonUniformShuffle" ],
       "version" : "1.3"
@@ -4480,85 +4491,6 @@
       "version" : "None"
     },
     {
-      "opname" : "OpGraphConstantARM",
-      "class"  : "Graph",
-      "opcode" : 4181,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "LiteralInteger", "name" : "GraphConstantID" }
-      ],
-      "capabilities" : [ "GraphARM" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpGraphEntryPointARM",
-      "class"  : "Graph",
-      "opcode" : 4182,
-      "operands" : [
-        { "kind" : "IdRef",                              "name" : "Graph" },
-        { "kind" : "LiteralString",                      "name" : "Name" },
-        { "kind" : "IdRef",          "quantifier" : "*", "name" : "Interface" }
-      ],
-      "capabilities" : [ "GraphARM" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpGraphARM",
-      "class"  : "Graph",
-      "opcode" : 4183,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" }
-      ],
-      "capabilities" : [ "GraphARM" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpGraphInputARM",
-      "class"  : "Graph",
-      "opcode" : 4184,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",          "name" : "InputIndex" },
-        { "kind" : "IdRef",          "quantifier" : "*", "name" : "ElementIndex" }
-      ],
-      "capabilities" : [ "GraphARM" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpGraphSetOutputARM",
-      "class"  : "Graph",
-      "opcode" : 4185,
-      "operands" : [
-        { "kind" : "IdRef", "name": "Value" },
-        { "kind" : "IdRef", "name" : "OutputIndex" },
-        { "kind" : "IdRef", "quantifier" : "*", "name" : "ElementIndex" }
-      ],
-      "capabilities" : [ "GraphARM" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpGraphEndARM",
-      "class"  : "Graph",
-      "opcode" : 4186,
-      "capabilities" : [ "GraphARM" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpTypeGraphARM",
-      "class"  : "Type-Declaration",
-      "opcode" : 4190,
-      "operands" : [
-        { "kind" : "IdResult" },
-        { "kind" : "LiteralInteger",               "name" : "NumInputs" },
-        { "kind" : "IdRef",    "quantifier" : "*", "name" : "InOutTypes" }
-      ],
-      "capabilities" : [ "GraphARM" ],
-      "version" : "None"
-    },
-    {
       "opname" : "OpTerminateInvocation",
       "class"  : "Control-Flow",
       "opcode" : 4416,
@@ -4575,6 +4507,7 @@
       "capabilities" : [
         "UntypedPointersKHR"
       ],
+      "provisional" : true,
       "version" : "None",
       "operands" : [
         { "kind" : "IdResult" },
@@ -4586,6 +4519,7 @@
       "class" : "Memory",
       "opcode" : 4418,
       "capabilities" : [ "UntypedPointersKHR" ],
+      "provisional" : true,
       "version" : "None",
       "operands" : [
         { "kind" : "IdResultType" },
@@ -4600,6 +4534,7 @@
       "class" : "Memory",
       "opcode" : 4419,
       "capabilities" : [ "UntypedPointersKHR" ],
+      "provisional" : true,
       "version" : "None",
       "operands" : [
         { "kind" : "IdResultType" },
@@ -4614,6 +4549,7 @@
       "class" : "Memory",
       "opcode" : 4420,
       "capabilities" : [ "UntypedPointersKHR" ],
+      "provisional" : true,
       "version" : "None",
       "operands" : [
         { "kind" : "IdResultType" },
@@ -4654,6 +4590,7 @@
       "class"  : "Memory",
       "opcode" : 4423,
       "capabilities" : [ "UntypedPointersKHR" ],
+      "provisional" : true,
       "version" : "None",
       "operands" : [
         { "kind" : "IdResultType" },
@@ -4669,6 +4606,7 @@
       "class"  : "Memory",
       "opcode" : 4424,
       "capabilities" : [ "UntypedPointersKHR" ],
+      "provisional" : true,
       "version" : "None",
       "operands" : [
         { "kind" : "IdResultType" },
@@ -4684,6 +4622,7 @@
       "class"  : "Memory",
       "opcode" : 4425,
       "capabilities" : [ "UntypedPointersKHR" ],
+      "provisional" : true,
       "version" : "None",
       "operands" : [
         { "kind" : "IdResultType" },
@@ -4698,6 +4637,7 @@
       "class"  : "Memory",
       "opcode" : 4426,
       "capabilities" : [ "UntypedPointersKHR" ],
+      "provisional" : true,
       "version" : "None",
       "operands" : [
         { "kind" : "IdRef",                            "name" : "Pointer Type" },
@@ -4706,20 +4646,6 @@
         { "kind" : "IdRef",        "quantifier" : "?", "name" : "Locality" },
         { "kind" : "IdRef",        "quantifier" : "?", "name" : "Cache Type" }
       ]
-    },
-    {
-      "opname" : "OpFmaKHR",
-      "class"  : "Arithmetic",
-      "opcode" : 4427,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",        "name" : "Operand 1" },
-        { "kind" : "IdRef",        "name" : "Operand 2" },
-        { "kind" : "IdRef",        "name" : "Operand 3" }
-      ],
-      "capabilities" : [ "FMAKHR" ],
-      "version" : "None"
     },
     {
       "opname" : "OpSubgroupAllKHR",
@@ -4808,26 +4734,6 @@
       ],
       "extensions" : [ "SPV_KHR_relaxed_extended_instruction" ],
       "version": "None"
-    },
-    {
-      "opname" : "OpUntypedGroupAsyncCopyKHR",
-      "class"  : "Group",
-      "opcode" : 4434,
-      "capabilities" : [ "UntypedPointersKHR" ],
-      "version" : "None",
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",                            "name" : "Execution" },
-        { "kind" : "IdRef",                            "name" : "Destination" },
-        { "kind" : "IdRef",                            "name" : "Source" },
-        { "kind" : "IdRef",                            "name" : "Element Num Bytes" },
-        { "kind" : "IdRef",                            "name" : "Num Elements" },
-        { "kind" : "IdRef",                            "name" : "Stride" },
-        { "kind" : "IdRef",                            "name" : "Event" },
-        { "kind" : "MemoryAccess", "quantifier" : "?", "name" : "Destination Memory Operands" },
-        { "kind" : "MemoryAccess", "quantifier" : "?", "name" : "Source Memory Operands" }
-      ]
     },
     {
       "opname" : "OpTraceRayKHR",
@@ -5296,18 +5202,6 @@
       "version" : "None"
     },
     {
-      "opname" : "OpBitCastArrayQCOM",
-      "class"  : "Conversion",
-      "opcode" : 4497,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef", "name" : "Source Array" }
-      ],
-      "capabilities" : [ "CooperativeMatrixConversionQCOM" ],
-      "version" : "None"
-    },
-    {
       "opname" : "OpImageBlockMatchWindowSSDQCOM",
       "class"  : "Image",
       "opcode" : 4500,
@@ -5369,43 +5263,6 @@
         { "kind" : "IdRef", "name" : "Block Size" }
       ],
       "capabilities" : [ "TextureBlockMatch2QCOM" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpCompositeConstructCoopMatQCOM",
-      "class"  : "Composite",
-      "opcode" : 4540,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef", "name" : "Source Array" }
-      ],
-      "capabilities" : [ "CooperativeMatrixConversionQCOM" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpCompositeExtractCoopMatQCOM",
-      "class"  : "Composite",
-      "opcode" : 4541,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef", "name" : "Source Cooperative Matrix" }
-      ],
-      "capabilities" : [ "CooperativeMatrixConversionQCOM" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpExtractSubArrayQCOM",
-      "class"  : "Composite",
-      "opcode" : 4542,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef", "name" : "Source Array" },
-        { "kind" : "IdRef", "name" : "index" }
-      ],
-      "capabilities" : [ "CooperativeMatrixConversionQCOM" ],
       "version" : "None"
     },
     {
@@ -6518,9 +6375,8 @@
       "version" : "None"
     },
     {
-      "opname" : "OpRayQueryGetIntersectionClusterIdNV",
+      "opname" : "OpRayQueryGetClusterIdNV",
       "class" : "Reserved",
-      "aliases" : ["OpRayQueryGetClusterIdNV"],
       "opcode" : 5345,
       "operands" : [
           { "kind" : "IdResultType" },
@@ -8253,7 +8109,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdRef", "name" : "Fwd Ref Offset" },
         { "kind" : "IdRef", "name" : "Bwd Ref Offset" },
-        { "kind" : "IdRef", "name" : "Search Window Config" },
+        { "kind" : "IdRef", "name" : "id> Search Window Config" },
         { "kind" : "IdRef", "name" : "Payload" }
       ],
       "capabilities" : [ "SubgroupAvcMotionEstimationINTEL" ],
@@ -9170,19 +9026,19 @@
     },
     {
       "opname" : "OpVariableLengthArrayINTEL",
-      "class"  : "Memory",
+      "class"  : "@exclude",
       "opcode" : 5818,
       "operands" : [
         { "kind" : "IdResultType" },
         { "kind" : "IdResult" },
-        { "kind" : "IdRef", "name" : "Length" }
+        { "kind" : "IdRef", "name" : "Lenght" }
       ],
       "capabilities" : [ "VariableLengthArrayINTEL" ],
       "version" : "None"
     },
     {
       "opname" : "OpSaveMemoryINTEL",
-      "class"  : "Memory",
+      "class"  : "@exclude",
       "opcode" : 5819,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9193,7 +9049,7 @@
     },
     {
       "opname" : "OpRestoreMemoryINTEL",
-      "class"  : "Memory",
+      "class"  : "@exclude",
       "opcode" : 5820,
       "operands" : [
         { "kind" : "IdRef", "name" : "Ptr" }
@@ -9202,9 +9058,8 @@
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatSinCosPiALTERA",
+      "opname" : "OpArbitraryFloatSinCosPiINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatSinCosPiINTEL" ],
       "opcode" : 5840,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9216,13 +9071,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "RoundingAccuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatCastALTERA",
+      "opname" : "OpArbitraryFloatCastINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatCastINTEL" ],
       "opcode" : 5841,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9234,13 +9088,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatCastFromIntALTERA",
+      "opname" : "OpArbitraryFloatCastFromIntINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatCastFromIntINTEL" ],
       "opcode" : 5842,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9252,13 +9105,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatCastToIntALTERA",
+      "opname" : "OpArbitraryFloatCastToIntINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatCastToIntINTEL" ],
       "opcode" : 5843,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9270,13 +9122,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatAddALTERA",
+      "opname" : "OpArbitraryFloatAddINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatAddINTEL" ],
       "opcode" : 5846,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9290,13 +9141,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatSubALTERA",
+      "opname" : "OpArbitraryFloatSubINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatSubINTEL" ],
       "opcode" : 5847,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9310,13 +9160,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatMulALTERA",
+      "opname" : "OpArbitraryFloatMulINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatMulINTEL" ],
       "opcode" : 5848,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9330,13 +9179,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatDivALTERA",
+      "opname" : "OpArbitraryFloatDivINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatDivINTEL" ],
       "opcode" : 5849,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9350,13 +9198,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatGTALTERA",
+      "opname" : "OpArbitraryFloatGTINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatGTINTEL" ],
       "opcode" : 5850,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9366,13 +9213,12 @@
         { "kind" : "IdRef", "name" : "B" },
         { "kind" : "LiteralInteger", "name" : "Mb" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatGEALTERA",
+      "opname" : "OpArbitraryFloatGEINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatGEINTEL" ],
       "opcode" : 5851,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9382,13 +9228,12 @@
         { "kind" : "IdRef", "name" : "B" },
         { "kind" : "LiteralInteger", "name" : "Mb" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatLTALTERA",
+      "opname" : "OpArbitraryFloatLTINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatLTINTEL" ],
       "opcode" : 5852,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9398,13 +9243,12 @@
         { "kind" : "IdRef", "name" : "B" },
         { "kind" : "LiteralInteger", "name" : "Mb" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatLEALTERA",
+      "opname" : "OpArbitraryFloatLEINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatLEINTEL" ],
       "opcode" : 5853,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9414,13 +9258,12 @@
         { "kind" : "IdRef", "name" : "B" },
         { "kind" : "LiteralInteger", "name" : "Mb" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatEQALTERA",
+      "opname" : "OpArbitraryFloatEQINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatEQINTEL" ],
       "opcode" : 5854,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9430,13 +9273,12 @@
         { "kind" : "IdRef", "name" : "B" },
         { "kind" : "LiteralInteger", "name" : "Mb" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatRecipALTERA",
+      "opname" : "OpArbitraryFloatRecipINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatRecipINTEL" ],
       "opcode" : 5855,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9448,13 +9290,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatRSqrtALTERA",
+      "opname" : "OpArbitraryFloatRSqrtINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatRSqrtINTEL" ],
       "opcode" : 5856,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9466,13 +9307,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatCbrtALTERA",
+      "opname" : "OpArbitraryFloatCbrtINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatCbrtINTEL" ],
       "opcode" : 5857,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9484,13 +9324,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatHypotALTERA",
+      "opname" : "OpArbitraryFloatHypotINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatHypotINTEL" ],
       "opcode" : 5858,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9504,13 +9343,12 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpArbitraryFloatSqrtALTERA",
+      "opname" : "OpArbitraryFloatSqrtINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpArbitraryFloatSqrtINTEL" ],
       "opcode" : 5859,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9522,7 +9360,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9539,7 +9377,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9556,7 +9394,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9573,7 +9411,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9590,7 +9428,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9607,7 +9445,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9624,7 +9462,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9641,7 +9479,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9658,7 +9496,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9675,7 +9513,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9692,7 +9530,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9709,7 +9547,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9726,7 +9564,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9743,7 +9581,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9760,7 +9598,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9777,7 +9615,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9794,7 +9632,7 @@
         { "kind" : "LiteralInteger", "name" : "RoundingMode" },
         { "kind" : "LiteralInteger", "name" : "RoundingAccuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9811,7 +9649,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9828,7 +9666,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9845,7 +9683,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9864,7 +9702,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9883,7 +9721,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9902,7 +9740,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9921,7 +9759,7 @@
         { "kind" : "LiteralInteger", "name" : "Rounding" },
         { "kind" : "LiteralInteger", "name" : "Accuracy" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFloatingPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
       "version" : "None"
     },
     {
@@ -9973,9 +9811,8 @@
       "version" : "None"
     },
     {
-      "opname" : "OpFixedSqrtALTERA",
+      "opname" : "OpFixedSqrtINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedSqrtINTEL" ],
       "opcode" : 5923,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -9987,13 +9824,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedRecipALTERA",
+      "opname" : "OpFixedRecipINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedRecipINTEL" ],
       "opcode" : 5924,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10005,13 +9841,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedRsqrtALTERA",
+      "opname" : "OpFixedRsqrtINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedRsqrtINTEL" ],
       "opcode" : 5925,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10023,13 +9858,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedSinALTERA",
+      "opname" : "OpFixedSinINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedSinINTEL" ],
       "opcode" : 5926,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10041,13 +9875,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedCosALTERA",
+      "opname" : "OpFixedCosINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedCosINTEL" ],
       "opcode" : 5927,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10059,13 +9892,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedSinCosALTERA",
+      "opname" : "OpFixedSinCosINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedSinCosINTEL" ],
       "opcode" : 5928,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10077,13 +9909,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedSinPiALTERA",
+      "opname" : "OpFixedSinPiINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedSinPiINTEL" ],
       "opcode" : 5929,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10095,13 +9926,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedCosPiALTERA",
+      "opname" : "OpFixedCosPiINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedCosPiINTEL" ],
       "opcode" : 5930,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10113,13 +9943,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedSinCosPiALTERA",
+      "opname" : "OpFixedSinCosPiINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedSinCosPiINTEL" ],
       "opcode" : 5931,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10131,13 +9960,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedLogALTERA",
+      "opname" : "OpFixedLogINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedLogINTEL" ],
       "opcode" : 5932,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10149,13 +9977,12 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFixedExpALTERA",
+      "opname" : "OpFixedExpINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpFixedExpINTEL" ],
       "opcode" : 5933,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10167,39 +9994,36 @@
         { "kind" : "LiteralInteger", "name" : "Q" },
         { "kind" : "LiteralInteger", "name" : "O" }
       ],
-      "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA" ],
+      "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpPtrCastToCrossWorkgroupALTERA",
+      "opname" : "OpPtrCastToCrossWorkgroupINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpPtrCastToCrossWorkgroupINTEL" ],
       "opcode" : 5934,
       "operands" : [
         { "kind" : "IdResultType" },
         { "kind" : "IdResult" },
         { "kind" : "IdRef", "name" : "Pointer" }
       ],
-      "capabilities" : [ "USMStorageClassesALTERA" ],
+      "capabilities" : [ "USMStorageClassesINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpCrossWorkgroupCastToPtrALTERA",
+      "opname" : "OpCrossWorkgroupCastToPtrINTEL",
       "class"  : "@exclude",
-      "aliases" : [ "OpCrossWorkgroupCastToPtrINTEL" ],
       "opcode" : 5938,
       "operands" : [
         { "kind" : "IdResultType" },
         { "kind" : "IdResult" },
         { "kind" : "IdRef", "name" : "Pointer" }
       ],
-      "capabilities" : [ "USMStorageClassesALTERA" ],
+      "capabilities" : [ "USMStorageClassesINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpReadPipeBlockingALTERA",
-      "class"  : "@exclude",
-      "aliases" : [ "OpReadPipeBlockingINTEL" ],
+      "opname" : "OpReadPipeBlockingINTEL",
+      "class"  : "Pipe",
       "opcode" : 5946,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10207,13 +10031,13 @@
         { "kind" : "IdRef", "name" : "Packet Size" },
         { "kind" : "IdRef", "name" : "Packet Alignment" }
       ],
-      "capabilities" : [ "BlockingPipesALTERA" ],
+      "capabilities" : [ "BlockingPipesINTEL" ],
+      "extensions" : [ "SPV_INTEL_blocking_pipes" ],
       "version" : "None"
     },
     {
-      "opname" : "OpWritePipeBlockingALTERA",
-      "class"  : "@exclude",
-      "aliases" : [ "OpWritePipeBlockingINTEL" ],
+      "opname" : "OpWritePipeBlockingINTEL",
+      "class"  : "Pipe",
       "opcode" : 5947,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10221,20 +10045,21 @@
         { "kind" : "IdRef", "name" : "Packet Size" },
         { "kind" : "IdRef", "name" : "Packet Alignment" }
       ],
-      "capabilities" : [ "BlockingPipesALTERA" ],
+      "capabilities" : [ "BlockingPipesINTEL" ],
+      "extensions" : [ "SPV_INTEL_blocking_pipes" ],
       "version" : "None"
     },
     {
-      "opname" : "OpFPGARegALTERA",
-      "class"  : "@exclude",
-      "aliases" : [ "OpFPGARegINTEL" ],
+      "opname" : "OpFPGARegINTEL",
+      "class"  : "Reserved",
       "opcode" : 5949,
       "operands" : [
         { "kind" : "IdResultType" },
         { "kind" : "IdResult" },
         { "kind" : "IdRef", "name" : "Input" }
       ],
-      "capabilities" : [ "FPGARegALTERA" ],
+      "capabilities" : [ "FPGARegINTEL" ],
+      "extensions" : [ "SPV_INTEL_fpga_reg" ],
       "version" : "None"
     },
     {
@@ -10690,9 +10515,8 @@
       "version" : "None"
     },
     {
-      "opname" : "OpTaskSequenceCreateALTERA",
-      "class"  : "@exclude",
-      "aliases" : [ "OpTaskSequenceCreateINTEL" ],
+      "opname" : "OpTaskSequenceCreateINTEL",
+      "class"  : "Reserved",
       "opcode" : 6163,
       "operands" : [
         { "kind" : "IdResultType" },
@@ -10703,54 +10527,50 @@
         { "kind" : "LiteralInteger",  "name" : "GetCapacity" },
         { "kind" : "LiteralInteger",  "name" : "AsyncCapacity" }
       ],
-      "capabilities" : [ "TaskSequenceALTERA" ],
+      "capabilities" : [ "TaskSequenceINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpTaskSequenceAsyncALTERA",
-      "class"  : "@exclude",
-      "aliases" : [ "OpTaskSequenceAsyncINTEL" ],
+      "opname" : "OpTaskSequenceAsyncINTEL",
+      "class"  : "Reserved",
       "opcode" : 6164,
       "operands" : [
         { "kind" : "IdRef",          "name" : "Sequence" },
         { "kind" : "IdRef", "quantifier" : "*",  "name" : "Arguments" }
       ],
-      "capabilities" : [ "TaskSequenceALTERA" ],
+      "capabilities" : [ "TaskSequenceINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpTaskSequenceGetALTERA",
-      "class"  : "@exclude",
-      "aliases" : [ "OpTaskSequenceGetINTEL" ],
+      "opname" : "OpTaskSequenceGetINTEL",
+      "class"  : "Reserved",
       "opcode" : 6165,
       "operands" : [
         { "kind" : "IdResultType" },
         { "kind" : "IdResult" },
         { "kind" : "IdRef",          "name" : "Sequence" }
       ],
-      "capabilities" : [ "TaskSequenceALTERA" ],
+      "capabilities" : [ "TaskSequenceINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpTaskSequenceReleaseALTERA",
-      "class"  : "@exclude",
-      "aliases" : [ "OpTaskSequenceReleaseINTEL" ],
+      "opname" : "OpTaskSequenceReleaseINTEL",
+      "class"  : "Reserved",
       "opcode" : 6166,
       "operands" : [
         { "kind" : "IdRef",          "name" : "Sequence" }
       ],
-      "capabilities" : [ "TaskSequenceALTERA" ],
+      "capabilities" : [ "TaskSequenceINTEL" ],
       "version" : "None"
     },
     {
-      "opname" : "OpTypeTaskSequenceALTERA",
-      "class"  : "@exclude",
-      "aliases" : [ "OpTypeTaskSequenceINTEL" ],
+      "opname" : "OpTypeTaskSequenceINTEL",
+      "class"  : "Type-Declaration",
       "opcode" : 6199,
       "operands" : [
         { "kind" : "IdResult" }
       ],
-      "capabilities" : [ "TaskSequenceALTERA" ],
+      "capabilities" : [ "TaskSequenceINTEL" ],
       "version": "None"
     },
     {
@@ -10888,114 +10708,6 @@
         { "kind" : "IdRef", "name" : "LUTIndex" }
       ],
       "capabilities" : [ "TernaryBitwiseFunctionINTEL" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpUntypedVariableLengthArrayINTEL",
-      "class"  : "Memory",
-      "opcode" : 6244,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef", "name" : "Element Type" },
-        { "kind" : "IdRef", "name" : "Length" }
-      ],
-      "capabilities" : [ "UntypedVariableLengthArrayINTEL" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpConditionalExtensionINTEL",
-      "class"  : "Extension",
-      "opcode" : 6248,
-      "operands" : [
-        { "kind" : "IdRef",         "name" : "Condition" },
-        { "kind" : "LiteralString", "name" : "Name" }
-      ],
-      "capabilities" : [ "SpecConditionalINTEL" ],
-      "provisional" : true,
-      "version" : "None"
-    },
-    {
-      "opname" : "OpConditionalEntryPointINTEL",
-      "class"  : "Mode-Setting",
-      "opcode" : 6249,
-      "operands" : [
-        { "kind" : "IdRef",                              "name" : "Condition" },
-        { "kind" : "ExecutionModel" },
-        { "kind" : "IdRef",                              "name" : "Entry Point" },
-        { "kind" : "LiteralString",                      "name" : "Name" },
-        { "kind" : "IdRef",          "quantifier" : "*", "name" : "Interface" }
-      ],
-      "capabilities" : [ "SpecConditionalINTEL" ],
-      "provisional" : true,
-      "version" : "None"
-    },
-    {
-      "opname" : "OpConditionalCapabilityINTEL",
-      "class"  : "Mode-Setting",
-      "opcode" : 6250,
-      "operands" : [
-        { "kind" : "IdRef",      "name" : "Condition" },
-        { "kind" : "Capability", "name" : "Capability" }
-      ],
-      "capabilities" : [ "SpecConditionalINTEL" ],
-      "provisional" : true,
-      "version" : "None"
-    },
-    {
-      "opname" : "OpSpecConstantTargetINTEL",
-      "class"  : "Constant-Creation",
-      "opcode" : 6251,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "LiteralInteger",                     "name" : "Target" },
-        { "kind" : "LiteralInteger", "quantifier" : "*", "name" : "Features" }
-      ],
-      "capabilities" : [ "FunctionVariantsINTEL" ],
-      "provisional" : true,
-      "version": "None"
-    },
-    {
-      "opname" : "OpSpecConstantArchitectureINTEL",
-      "class"  : "Constant-Creation",
-      "opcode" : 6252,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "LiteralInteger", "name" : "Category" },
-        { "kind" : "LiteralInteger", "name" : "Family" },
-        { "kind" : "LiteralInteger", "name" : "Opcode" },
-        { "kind" : "LiteralInteger", "name" : "Architecture" }
-      ],
-      "capabilities" : [ "FunctionVariantsINTEL" ],
-      "provisional" : true,
-      "version": "None"
-    },
-    {
-      "opname" : "OpSpecConstantCapabilitiesINTEL",
-      "class"  : "Constant-Creation",
-      "opcode" : 6253,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "Capability", "quantifier" : "*", "name" : "Capabilities" }
-      ],
-      "capabilities" : [ "FunctionVariantsINTEL" ],
-      "provisional" : true,
-      "version": "None"
-    },
-    {
-      "opname" : "OpConditionalCopyObjectINTEL",
-      "class"  : "Composite",
-      "opcode" : 6254,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef", "quantifier" : "*", "name" : "Condition 0, Operand 0, +\nCondition 1, Operand 1, +\n..." }
-      ],
-      "capabilities" : [ "SpecConditionalINTEL" ],
-      "provisional" : true,
       "version" : "None"
     },
     {
@@ -11148,45 +10860,6 @@
         { "kind" : "IdRef",           "name" : "Mask" }
       ],
       "capabilities" : [ "MaskedGatherScatterINTEL" ],
-      "version" : "None"
-    },
-    {
-      "opname" : "OpConvertHandleToImageINTEL",
-      "class"  : "Image",
-      "opcode" : 6529,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",           "name" : "Operand" }
-      ],
-      "capabilities" : [ "BindlessImagesINTEL" ],
-      "provisional"  : true,
-      "version" : "None"
-    },
-    {
-      "opname" : "OpConvertHandleToSamplerINTEL",
-      "class"  : "Image",
-      "opcode" : 6530,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",           "name" : "Operand" }
-      ],
-      "capabilities" : [ "BindlessImagesINTEL" ],
-      "provisional"  : true,
-      "version" : "None"
-    },
-    {
-      "opname" : "OpConvertHandleToSampledImageINTEL",
-      "class"  : "Image",
-      "opcode" : 6531,
-      "operands" : [
-        { "kind" : "IdResultType" },
-        { "kind" : "IdResult" },
-        { "kind" : "IdRef",           "name" : "Operand" }
-      ],
-      "capabilities" : [ "BindlessImagesINTEL" ],
-      "provisional"  : true,
       "version" : "None"
     }
   ],
@@ -11481,100 +11154,90 @@
           "version" : "1.4"
         },
         {
-          "enumerant" : "InitiationIntervalALTERA",
-          "aliases" : [ "InitiationIntervalINTEL" ],
+          "enumerant" : "InitiationIntervalINTEL",
           "value" : "0x10000",
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MaxConcurrencyALTERA",
-          "aliases" : [ "MaxConcurrencyINTEL" ],
+          "enumerant" : "MaxConcurrencyINTEL",
           "value" : "0x20000",
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "DependencyArrayALTERA",
-          "aliases" : [ "DependencyArrayINTEL" ],
+          "enumerant" : "DependencyArrayINTEL",
           "value" : "0x40000",
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "PipelineEnableALTERA",
-          "aliases" : [ "PipelineEnableINTEL" ],
+          "enumerant" : "PipelineEnableINTEL",
           "value" : "0x80000",
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "LoopCoalesceALTERA",
-          "aliases" : [ "LoopCoalesceINTEL" ],
+          "enumerant" : "LoopCoalesceINTEL",
           "value" : "0x100000",
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MaxInterleavingALTERA",
-          "aliases" : [ "MaxInterleavingINTEL" ],
+          "enumerant" : "MaxInterleavingINTEL",
           "value" : "0x200000",
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "SpeculatedIterationsALTERA",
-          "aliases" : [ "SpeculatedIterationsINTEL" ],
+          "enumerant" : "SpeculatedIterationsINTEL",
           "value" : "0x400000",
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "NoFusionALTERA",
-          "aliases" : [ "NoFusionINTEL" ],
+          "enumerant" : "NoFusionINTEL",
           "value" : "0x800000",
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "LoopCountALTERA",
-          "aliases" : [ "LoopCountINTEL" ],
+          "enumerant" : "LoopCountINTEL",
           "value" : "0x1000000",
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MaxReinvocationDelayALTERA",
-          "aliases" : [ "MaxReinvocationDelayINTEL" ],
+          "enumerant" : "MaxReinvocationDelayINTEL",
           "value" : "0x2000000",
           "parameters" : [
             { "kind" : "LiteralInteger" }
           ],
-          "capabilities" : [ "FPGALoopControlsALTERA" ],
+          "capabilities" : [ "FPGALoopControlsINTEL" ],
           "version" : "None"
         }
       ]
@@ -12722,7 +12385,7 @@
           "enumerant" : "DerivativeGroupQuadsKHR",
           "aliases" : ["DerivativeGroupQuadsNV"],
           "value" : 5289,
-          "capabilities" : [ "ComputeDerivativeGroupQuadsKHR" ],
+          "capabilities" : [ "ComputeDerivativeGroupQuadsNV", "ComputeDerivativeGroupQuadsKHR" ],
           "extensions" : [ "SPV_NV_compute_shader_derivatives", "SPV_KHR_compute_shader_derivatives" ],
           "version" : "None"
         },
@@ -12730,7 +12393,7 @@
           "enumerant" : "DerivativeGroupLinearKHR",
           "aliases" : ["DerivativeGroupLinearNV"],
           "value" : 5290,
-          "capabilities" : [ "ComputeDerivativeGroupLinearKHR" ],
+          "capabilities" : [ "ComputeDerivativeGroupLinearNV", "ComputeDerivativeGroupLinearKHR" ],
           "extensions" : [ "SPV_NV_compute_shader_derivatives", "SPV_KHR_compute_shader_derivatives" ],
           "version" : "None"
         },
@@ -12782,12 +12445,6 @@
           "value" : 5371,
           "capabilities" : [ "FragmentShaderShadingRateInterlockEXT" ],
           "extensions" : [ "SPV_EXT_fragment_shader_interlock" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "Shader64BitIndexingEXT",
-          "value" : 5427,
-          "capabilities" : [ "Shader64BitIndexingEXT" ],
           "version" : "None"
         },
         {
@@ -13132,17 +12789,21 @@
           "version" : "None"
         },
         {
-          "enumerant" : "DeviceOnlyALTERA",
-          "aliases" : [ "DeviceOnlyINTEL" ],
+          "enumerant" : "DeviceOnlyINTEL",
           "value" : 5936,
-          "capabilities" : [ "USMStorageClassesALTERA" ],
+          "extensions" : [
+            "SPV_INTEL_usm_storage_classes"
+          ],
+          "capabilities" : [ "USMStorageClassesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "HostOnlyALTERA",
-          "aliases" : [ "HostOnlyINTEL" ],
+          "enumerant" : "HostOnlyINTEL",
           "value" : 5937,
-          "capabilities" : [ "USMStorageClassesALTERA" ],
+          "extensions" : [
+            "SPV_INTEL_usm_storage_classes"
+          ],
+          "capabilities" : [ "USMStorageClassesINTEL" ],
           "version" : "None"
         }
       ]
@@ -13796,49 +13457,49 @@
         {
           "enumerant" : "TRN",
           "value" : 0,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "TRN_ZERO",
           "value" : 1,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "RND",
           "value" : 2,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "RND_ZERO",
           "value" : 3,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "RND_INF",
           "value" : 4,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "RND_MIN_INF",
           "value" : 5,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "RND_CONV",
           "value" : 6,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "RND_CONV_ODD",
           "value" : 7,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         }
       ]
@@ -13868,25 +13529,25 @@
         {
           "enumerant" : "WRAP",
           "value" : 0,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "SAT",
           "value" : 1,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "SAT_ZERO",
           "value" : 2,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         },
         {
           "enumerant" : "SAT_SYM",
           "value" : 3,
-          "capabilities" : [ "ArbitraryPrecisionFixedPointALTERA"],
+          "capabilities" : [ "ArbitraryPrecisionFixedPointINTEL"],
           "version" : "None"
         }
       ]
@@ -14023,10 +13684,9 @@
           "version": "1.0"
         },
         {
-          "enumerant" : "RuntimeAlignedALTERA",
-          "aliases" : [ "RuntimeAlignedINTEL" ],
+          "enumerant" : "RuntimeAlignedINTEL",
           "value" : 5940,
-          "capabilities" : [ "RuntimeAlignedAttributeALTERA" ],
+          "capabilities" : [ "RuntimeAlignedAttributeINTEL" ],
           "version": "1.0"
         }
       ]
@@ -14381,12 +14041,6 @@
           "version" : "1.2"
         },
         {
-          "enumerant" : "SaturatedToLargestFloat8NormalConversionEXT",
-          "value" : 4216,
-          "capabilities" : [ "Float8EXT" ],
-          "version": "None"
-        },
-        {
           "enumerant" : "NoSignedWrap",
           "value" : 4469,
           "extensions" : [ "SPV_KHR_no_integer_wrap_decoration" ],
@@ -14724,198 +14378,188 @@
           "version" : "None"
         },
         {
-          "enumerant" : "RegisterALTERA",
-          "aliases" : [ "RegisterINTEL" ],
+          "enumerant" : "RegisterINTEL",
           "value" : 5825,
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MemoryALTERA",
-          "aliases" : [ "MemoryINTEL" ],
+          "enumerant" : "MemoryINTEL",
           "value" : 5826,
           "parameters" : [
             { "kind" : "LiteralString", "name" : "Memory Type" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "NumbanksALTERA",
-          "aliases" : [ "NumbanksINTEL" ],
+          "enumerant" : "NumbanksINTEL",
           "value" : 5827,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Banks" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "BankwidthALTERA",
-          "aliases" : [ "BankwidthINTEL" ],
+          "enumerant" : "BankwidthINTEL",
           "value" : 5828,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Bank Width" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MaxPrivateCopiesALTERA",
-          "aliases" : [ "MaxPrivateCopiesINTEL" ],
+          "enumerant" : "MaxPrivateCopiesINTEL",
           "value" : 5829,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Maximum Copies" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "SinglepumpALTERA",
-          "aliases" : [ "SinglepumpINTEL" ],
+          "enumerant" : "SinglepumpINTEL",
           "value" : 5830,
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "DoublepumpALTERA",
-          "aliases" : [ "DoublepumpINTEL" ],
+          "enumerant" : "DoublepumpINTEL",
           "value" : 5831,
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MaxReplicatesALTERA",
-          "aliases" : [ "MaxReplicatesINTEL" ],
+          "enumerant" : "MaxReplicatesINTEL",
           "value" : 5832,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Maximum Replicates" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "SimpleDualPortALTERA",
-          "aliases" : [ "SimpleDualPortINTEL" ],
+          "enumerant" : "SimpleDualPortINTEL",
           "value" : 5833,
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MergeALTERA",
-          "aliases" : [ "MergeINTEL" ],
+          "enumerant" : "MergeINTEL",
           "value" : 5834,
           "parameters" : [
             { "kind" : "LiteralString", "name" : "Merge Key" },
             { "kind" : "LiteralString", "name" : "Merge Type" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "BankBitsALTERA",
-          "aliases" : [ "BankBitsINTEL" ],
+          "enumerant" : "BankBitsINTEL",
           "value" : 5835,
           "parameters" : [
             { "kind" : "LiteralInteger", "quantifier" : "*", "name" : "Bank Bits" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "ForcePow2DepthALTERA",
-          "aliases" : [ "ForcePow2DepthINTEL" ],
+          "enumerant" : "ForcePow2DepthINTEL",
           "value" : 5836,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Force Key" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "StridesizeALTERA",
-          "aliases" : [ "StridesizeINTEL" ],
+          "enumerant" : "StridesizeINTEL",
           "value" : 5883,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Stride Size" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "WordsizeALTERA",
-          "aliases" : [ "WordsizeINTEL" ],
+          "enumerant" : "WordsizeINTEL",
           "value" : 5884,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Word Size" }
           ],
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "TrueDualPortALTERA",
-          "aliases" : [ "TrueDualPortINTEL" ],
+          "enumerant" : "TrueDualPortINTEL",
           "value" : 5885,
-          "capabilities" : [ "FPGAMemoryAttributesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAttributesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "BurstCoalesceALTERA",
-          "aliases" : [ "BurstCoalesceINTEL" ],
+          "enumerant" : "BurstCoalesceINTEL",
           "value" : 5899,
-          "capabilities" : [ "FPGAMemoryAccessesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAccessesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "CacheSizeALTERA",
-          "aliases" : [ "CacheSizeINTEL" ],
+          "enumerant" : "CacheSizeINTEL",
           "value" : 5900,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Cache Size in bytes" }
           ],
-          "capabilities" : [ "FPGAMemoryAccessesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAccessesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "DontStaticallyCoalesceALTERA",
-          "aliases" : [ "DontStaticallyCoalesceINTEL" ],
+          "enumerant" : "DontStaticallyCoalesceINTEL",
           "value" : 5901,
-          "capabilities" : [ "FPGAMemoryAccessesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAccessesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "PrefetchALTERA",
-          "aliases" : [ "PrefetchINTEL" ],
+          "enumerant" : "PrefetchINTEL",
           "value" : 5902,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Prefetcher Size in bytes" }
           ],
-          "capabilities" : [ "FPGAMemoryAccessesALTERA" ],
+          "capabilities" : [ "FPGAMemoryAccessesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "StallEnableALTERA",
-          "aliases" : [ "StallEnableINTEL" ],
+          "enumerant" : "StallEnableINTEL",
           "value" : 5905,
-          "capabilities" : [ "FPGAClusterAttributesALTERA" ],
+          "capabilities" : [ "FPGAClusterAttributesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "FuseLoopsInFunctionALTERA",
-          "aliases" : [ "FuseLoopsInFunctionINTEL" ],
+          "enumerant" : "FuseLoopsInFunctionINTEL",
           "value" : 5907,
-          "capabilities" : [ "LoopFuseALTERA" ],
+          "capabilities" : [ "LoopFuseINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MathOpDSPModeALTERA",
-          "aliases" : [ "MathOpDSPModeINTEL" ],
+          "enumerant" : "MathOpDSPModeINTEL",
           "value" : 5909,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Mode" },
             { "kind" : "LiteralInteger", "name" : "Propagate" }
           ],
-          "capabilities" : [ "FPGADSPControlALTERA" ],
+          "capabilities" : [ "FPGADSPControlINTEL" ],
           "version" : "None"
         },
         {
@@ -14937,53 +14581,48 @@
           "version" : "None"
         },
         {
-          "enumerant" : "InitiationIntervalALTERA",
-          "aliases" : [ "InitiationIntervalINTEL" ],
+          "enumerant" : "InitiationIntervalINTEL",
           "value" : 5917,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Cycles" }
           ],
-          "capabilities" : [ "FPGAInvocationPipeliningAttributesALTERA" ],
+          "capabilities" : [ "FPGAInvocationPipeliningAttributesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MaxConcurrencyALTERA",
-          "aliases" : [ "MaxConcurrencyINTEL" ],
+          "enumerant" : "MaxConcurrencyINTEL",
           "value" : 5918,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Invocations" }
           ],
-          "capabilities" : [ "FPGAInvocationPipeliningAttributesALTERA" ],
+          "capabilities" : [ "FPGAInvocationPipeliningAttributesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "PipelineEnableALTERA",
-          "aliases" : [ "PipelineEnableINTEL" ],
+          "enumerant" : "PipelineEnableINTEL",
           "value" : 5919,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Enable" }
           ],
-          "capabilities" : [ "FPGAInvocationPipeliningAttributesALTERA" ],
+          "capabilities" : [ "FPGAInvocationPipeliningAttributesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "BufferLocationALTERA",
-          "aliases" : [ "BufferLocationINTEL" ],
+          "enumerant" : "BufferLocationINTEL",
           "value" : 5921,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Buffer Location ID" }
           ],
-          "capabilities" : [ "FPGABufferLocationALTERA" ],
+          "capabilities" : [ "FPGABufferLocationINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "IOPipeStorageALTERA",
-          "aliases" : [ "IOPipeStorageINTEL" ],
+          "enumerant" : "IOPipeStorageINTEL",
           "value" : 5944,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "IO Pipe ID" }
           ],
-          "capabilities" : [ "IOPipesALTERA" ],
+          "capabilities" : [ "IOPipesINTEL" ],
           "version" : "None"
         },
         {
@@ -15015,10 +14654,9 @@
           "version" : "None"
         },
         {
-          "enumerant" : "StallFreeALTERA",
-          "aliases" : [ "StallFreeINTEL" ],
+          "enumerant" : "StallFreeINTEL",
           "value" : 6151,
-          "capabilities" : [ "FPGAClusterAttributesV2ALTERA" ],
+          "capabilities" : [ "FPGAClusterAttributesV2INTEL" ],
           "version" : "None"
         },
         {
@@ -15031,106 +14669,95 @@
           "version" : "None"
         },
         {
-          "enumerant" : "LatencyControlLabelALTERA",
-          "aliases" : [ "LatencyControlLabelINTEL" ],
+          "enumerant" : "LatencyControlLabelINTEL",
           "value" : 6172,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Latency Label" }
           ],
-          "capabilities" : [ "FPGALatencyControlALTERA" ],
+          "capabilities" : [ "FPGALatencyControlINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "LatencyControlConstraintALTERA",
-          "aliases" : [ "LatencyControlConstraintINTEL" ],
+          "enumerant" : "LatencyControlConstraintINTEL",
           "value" : 6173,
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Relative To" },
             { "kind" : "LiteralInteger", "name" : "Control Type" },
             { "kind" : "LiteralInteger", "name" : "Relative Cycle" }
           ],
-          "capabilities" : [ "FPGALatencyControlALTERA" ],
+          "capabilities" : [ "FPGALatencyControlINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "ConduitKernelArgumentALTERA",
-          "aliases" : [ "ConduitKernelArgumentINTEL" ],
+          "enumerant" : "ConduitKernelArgumentINTEL",
           "value" : 6175,
-          "capabilities" : [ "FPGAArgumentInterfacesALTERA" ],
+          "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "RegisterMapKernelArgumentALTERA",
-          "aliases" : [ "RegisterMapKernelArgumentINTEL" ],
+          "enumerant" : "RegisterMapKernelArgumentINTEL",
           "value" : 6176,
-          "capabilities" : [ "FPGAArgumentInterfacesALTERA" ],
+          "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "MMHostInterfaceAddressWidthALTERA",
-          "aliases" : [ "MMHostInterfaceAddressWidthINTEL" ],
+          "enumerant" : "MMHostInterfaceAddressWidthINTEL",
           "value" : 6177,
-          "capabilities" : [ "FPGAArgumentInterfacesALTERA" ],
+          "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "AddressWidth" }
           ],
           "version" : "None"
         },
         {
-          "enumerant" : "MMHostInterfaceDataWidthALTERA",
-          "aliases" : [ "MMHostInterfaceDataWidthINTEL" ],
+          "enumerant" : "MMHostInterfaceDataWidthINTEL",
           "value" : 6178,
-          "capabilities" : [ "FPGAArgumentInterfacesALTERA" ],
+          "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "DataWidth" }
           ],
           "version" : "None"
         },
         {
-          "enumerant" : "MMHostInterfaceLatencyALTERA",
-          "aliases" : [ "MMHostInterfaceLatencyINTEL" ],
+          "enumerant" : "MMHostInterfaceLatencyINTEL",
           "value" : 6179,
-          "capabilities" : [ "FPGAArgumentInterfacesALTERA" ],
+          "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Latency" }
           ],
           "version" : "None"
         },
         {
-          "enumerant" : "MMHostInterfaceReadWriteModeALTERA",
-          "aliases" : [ "MMHostInterfaceReadWriteModeINTEL" ],
+          "enumerant" : "MMHostInterfaceReadWriteModeINTEL",
           "value" : 6180,
-          "capabilities" : [ "FPGAArgumentInterfacesALTERA" ],
+          "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
           "parameters" : [
             { "kind" : "AccessQualifier", "name" : "ReadWriteMode" }
           ],
           "version" : "None"
         },
         {
-          "enumerant" : "MMHostInterfaceMaxBurstALTERA",
-          "aliases" : [ "MMHostInterfaceMaxBurstINTEL" ],
+          "enumerant" : "MMHostInterfaceMaxBurstINTEL",
           "value" : 6181,
-          "capabilities" : [ "FPGAArgumentInterfacesALTERA" ],
+          "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "MaxBurstCount" }
           ],
           "version" : "None"
         },
         {
-          "enumerant" : "MMHostInterfaceWaitRequestALTERA",
-          "aliases" : [ "MMHostInterfaceWaitRequestINTEL" ],
+          "enumerant" : "MMHostInterfaceWaitRequestINTEL",
           "value" : 6182,
-          "capabilities" : [ "FPGAArgumentInterfacesALTERA" ],
+          "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
           "parameters" : [
             { "kind" : "LiteralInteger", "name" : "Waitrequest" }
           ],
           "version" : "None"
         },
         {
-          "enumerant" : "StableKernelArgumentALTERA",
-          "aliases" : [ "StableKernelArgumentINTEL" ],
+          "enumerant" : "StableKernelArgumentINTEL",
           "value" : 6183,
-          "capabilities" : [ "FPGAArgumentInterfacesALTERA" ],
+          "capabilities" : [ "FPGAArgumentInterfacesINTEL" ],
           "version" : "None"
         },
         {
@@ -15144,33 +14771,21 @@
           "version" : "None"
         },
         {
-          "enumerant" : "InitModeALTERA",
-          "aliases" : [ "InitModeINTEL" ],
+          "enumerant" : "InitModeINTEL",
           "value" : 6190,
           "parameters": [
             { "kind" : "InitializationModeQualifier", "name" : "Trigger" }
           ],
-          "capabilities" : [ "GlobalVariableFPGADecorationsALTERA" ],
+          "capabilities" : [ "GlobalVariableFPGADecorationsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "ImplementInRegisterMapALTERA",
-          "aliases" : [ "ImplementInRegisterMapINTEL" ],
+          "enumerant" : "ImplementInRegisterMapINTEL",
           "value" : 6191,
           "parameters": [
             { "kind" : "LiteralInteger", "name" : "Value" }
           ],
-          "capabilities" : [ "GlobalVariableFPGADecorationsALTERA" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "ConditionalINTEL",
-          "value" : 6247,
-          "parameters": [
-            { "kind" : "IdRef", "name" : "Condition" }
-          ],
-          "capabilities" : [ "SpecConditionalINTEL" ],
-          "provisional" : true,
+          "capabilities" : [ "GlobalVariableFPGADecorationsINTEL" ],
           "version" : "None"
         },
         {
@@ -16609,28 +16224,9 @@
           "version" : "None"
         },
         {
-          "enumerant" : "GraphARM",
-          "value" : 4191,
-          "extensions" : [ "SPV_ARM_graph"],
-          "version" : "None"
-        },
-        {
           "enumerant" : "CooperativeMatrixLayoutsARM",
           "value" : 4201,
           "extensions" : [ "SPV_ARM_cooperative_matrix_layouts" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "Float8EXT",
-          "value" : 4212,
-          "extensions" : [ "SPV_EXT_float8"],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "Float8CooperativeMatrixEXT",
-          "value" : 4213,
-          "capabilities" : [ "Float8EXT", "CooperativeMatrixKHR" ],
-          "extensions" : [ "SPV_EXT_float8"],
           "version" : "None"
         },
         {
@@ -16814,6 +16410,7 @@
           "enumerant" : "UntypedPointersKHR",
           "value" : 4473,
           "extensions" : [ "SPV_KHR_untyped_pointers" ],
+          "provisional" : true,
           "version" : "None"
         },
         {
@@ -16853,13 +16450,6 @@
           "value" : 4495,
           "capabilities" : [ "Shader" ],
           "extensions" : [ "SPV_QCOM_tile_shading" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "CooperativeMatrixConversionQCOM",
-          "value" : 4496,
-          "capabilities" : [ "CooperativeMatrixKHR" ],
-          "extensions" : [ "SPV_QCOM_cooperative_matrix_conversion" ],
           "version" : "None"
         },
         {
@@ -17331,12 +16921,6 @@
           "version" : "None"
         },
         {
-          "enumerant" : "Shader64BitIndexingEXT",
-          "value" : 5426,
-          "extensions" : [ "SPV_EXT_shader_64bit_indexing" ],
-          "version" : "None"
-        },
-        {
           "enumerant" : "CooperativeMatrixReductionsNV",
           "value" : 5430,
           "extensions" : [ "SPV_NV_cooperative_matrix2" ],
@@ -17513,10 +17097,9 @@
           "version" : "None"
         },
         {
-          "enumerant" : "FPGAMemoryAttributesALTERA",
-          "aliases" : [ "FPGAMemoryAttributesINTEL" ],
+          "enumerant" : "FPGAMemoryAttributesINTEL",
           "value" : 5824,
-          "extensions" : [ "SPV_ALTERA_fpga_memory_attributes", "SPV_INTEL_fpga_memory_attributes" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_attributes" ],
           "version" : "None"
         },
         {
@@ -17527,17 +17110,15 @@
           "version" : "None"
         },
         {
-          "enumerant" : "ArbitraryPrecisionIntegersALTERA",
-          "aliases" : [ "ArbitraryPrecisionIntegersINTEL" ],
+          "enumerant" : "ArbitraryPrecisionIntegersINTEL",
           "value" : 5844,
-          "extensions" : [ "SPV_ALTERA_arbitrary_precision_integers", "SPV_INTEL_arbitrary_precision_integers" ],
+          "extensions" : [ "SPV_INTEL_arbitrary_precision_integers" ],
           "version" : "None"
         },
         {
-          "enumerant" : "ArbitraryPrecisionFloatingPointALTERA",
-          "aliases" : [ "ArbitraryPrecisionFloatingPointINTEL" ],
+          "enumerant" : "ArbitraryPrecisionFloatingPointINTEL",
           "value" : 5845,
-          "extensions" : [ "SPV_ALTERA_arbitrary_precision_floating_point", "SPV_INTEL_arbitrary_precision_floating_point" ],
+          "extensions" : [ "SPV_INTEL_arbitrary_precision_floating_point" ],
           "version" : "None"
         },
         {
@@ -17547,10 +17128,9 @@
           "version" : "None"
         },
         {
-          "enumerant" : "FPGALoopControlsALTERA",
-          "aliases" : [ "FPGALoopControlsINTEL" ],
+          "enumerant" : "FPGALoopControlsINTEL",
           "value" : 5888,
-          "extensions" : [ "SPV_ALTERA_fpga_loop_controls", "SPV_INTEL_fpga_loop_controls" ],
+          "extensions" : [ "SPV_INTEL_fpga_loop_controls" ],
           "version" : "None"
         },
         {
@@ -17566,31 +17146,27 @@
           "version" : "None"
         },
         {
-          "enumerant" : "FPGAMemoryAccessesALTERA",
-          "aliases" : [ "FPGAMemoryAccessesINTEL" ],
+          "enumerant" : "FPGAMemoryAccessesINTEL",
           "value" : 5898,
-          "extensions" : [ "SPV_ALTERA_fpga_memory_accesses", "SPV_INTEL_fpga_memory_accesses" ],
+          "extensions" : [ "SPV_INTEL_fpga_memory_accesses" ],
           "version" : "None"
         },
         {
-          "enumerant" : "FPGAClusterAttributesALTERA",
-          "aliases" : [ "FPGAClusterAttributesINTEL" ],
+          "enumerant" : "FPGAClusterAttributesINTEL",
           "value" : 5904,
-          "extensions" : [ "SPV_ALTERA_fpga_cluster_attributes", "SPV_INTEL_fpga_cluster_attributes" ],
+          "extensions" : [ "SPV_INTEL_fpga_cluster_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "LoopFuseALTERA",
-          "aliases" : [ "LoopFuseINTEL" ],
+          "enumerant" : "LoopFuseINTEL",
           "value" : 5906,
-          "extensions" : [ "SPV_ALTERA_loop_fuse", "SPV_INTEL_loop_fuse" ],
+          "extensions" : [ "SPV_INTEL_loop_fuse" ],
           "version" : "None"
         },
         {
-          "enumerant" : "FPGADSPControlALTERA",
-          "aliases" : [ "FPGADSPControlINTEL" ],
+          "enumerant" : "FPGADSPControlINTEL",
           "value" : 5908,
-          "extensions" : [ "SPV_ALTERA_fpga_dsp_control", "SPV_INTEL_fpga_dsp_control" ],
+          "extensions" : [ "SPV_INTEL_fpga_dsp_control" ],
           "version" : "None"
         },
         {
@@ -17600,59 +17176,51 @@
           "version" : "None"
         },
         {
-          "enumerant" : "FPGAInvocationPipeliningAttributesALTERA",
-          "aliases" : [ "FPGAInvocationPipeliningAttributesINTEL" ],
+          "enumerant" : "FPGAInvocationPipeliningAttributesINTEL",
           "value" : 5916,
-          "extensions" : [ "SPV_ALTERA_fpga_invocation_pipelining_attributes", "SPV_INTEL_fpga_invocation_pipelining_attributes" ],
+          "extensions" : [ "SPV_INTEL_fpga_invocation_pipelining_attributes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "FPGABufferLocationALTERA",
-          "aliases" : [ "FPGABufferLocationINTEL" ],
+          "enumerant" : "FPGABufferLocationINTEL",
           "value" : 5920,
-          "extensions" : [ "SPV_ALTERA_fpga_buffer_location", "SPV_INTEL_fpga_buffer_location" ],
+          "extensions" : [ "SPV_INTEL_fpga_buffer_location" ],
           "version" : "None"
         },
         {
-          "enumerant" : "ArbitraryPrecisionFixedPointALTERA",
-          "aliases" : [ "ArbitraryPrecisionFixedPointINTEL" ],
+          "enumerant" : "ArbitraryPrecisionFixedPointINTEL",
           "value" : 5922,
-          "extensions" : [ "SPV_ALTERA_arbitrary_precision_fixed_point", "SPV_INTEL_arbitrary_precision_fixed_point" ],
+          "extensions" : [ "SPV_INTEL_arbitrary_precision_fixed_point" ],
           "version" : "None"
         },
         {
-          "enumerant" : "USMStorageClassesALTERA",
-          "aliases" : [ "USMStorageClassesINTEL" ],
+          "enumerant" : "USMStorageClassesINTEL",
           "value" : 5935,
-          "extensions" : [ "SPV_ALTERA_usm_storage_classes", "SPV_INTEL_usm_storage_classes" ],
+          "extensions" : [ "SPV_INTEL_usm_storage_classes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "RuntimeAlignedAttributeALTERA",
-          "aliases" : [ "RuntimeAlignedAttributeINTEL" ],
+          "enumerant" : "RuntimeAlignedAttributeINTEL",
           "value" : 5939,
-          "extensions" : [ "SPV_ALTERA_runtime_aligned", "SPV_INTEL_runtime_aligned" ],
+          "extensions" : [ "SPV_INTEL_runtime_aligned" ],
           "version" : "None"
         },
         {
-          "enumerant" : "IOPipesALTERA",
-          "aliases" : [ "IOPipesINTEL" ],
+          "enumerant" : "IOPipesINTEL",
           "value" : 5943,
-          "extensions" : [ "SPV_ALTERA_io_pipes", "SPV_INTEL_io_pipes" ],
+          "extensions" : [ "SPV_INTEL_io_pipes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "BlockingPipesALTERA",
-          "aliases" : [ "BlockingPipesINTEL" ],
+          "enumerant" : "BlockingPipesINTEL",
           "value" : 5945,
-          "extensions" : [ "SPV_ALTERA_blocking_pipes", "SPV_INTEL_blocking_pipes" ],
+          "extensions" : [ "SPV_INTEL_blocking_pipes" ],
           "version" : "None"
         },
         {
-          "enumerant" : "FPGARegALTERA",
-          "aliases" : [ "FPGARegINTEL" ],
+          "enumerant" : "FPGARegINTEL",
           "value" : 5948,
-          "extensions" : [ "SPV_ALTERA_fpga_reg", "SPV_INTEL_fpga_reg" ],
+          "extensions" : [ "SPV_INTEL_fpga_reg" ],
           "version" : "None"
         },
         {
@@ -17722,12 +17290,6 @@
           "version" : "None"
         },
         {
-          "enumerant" : "FMAKHR",
-          "value" : 6030,
-          "extensions" : [ "SPV_KHR_fma" ],
-          "version" : "None"
-        },
-        {
           "enumerant" : "AtomicFloat32AddEXT",
           "value" : 6033,
           "extensions" : [ "SPV_EXT_shader_atomic_float_add" ],
@@ -17783,11 +17345,10 @@
           "version" : "None"
         },
         {
-          "enumerant" : "FPGAClusterAttributesV2ALTERA",
-          "aliases" : [ "FPGAClusterAttributesV2INTEL" ],
+          "enumerant" : "FPGAClusterAttributesV2INTEL",
           "value" : 6150,
-          "capabilities" : [ "FPGAClusterAttributesALTERA" ],
-          "extensions" : [ "SPV_ALTERA_fpga_cluster_attributes", "SPV_INTEL_fpga_cluster_attributes" ],
+          "capabilities" : [ "FPGAClusterAttributesINTEL" ],
+          "extensions" : [ "SPV_INTEL_fpga_cluster_attributes" ],
           "version" : "None"
         },
         {
@@ -17798,10 +17359,9 @@
           "version" : "None"
         },
         {
-          "enumerant" : "TaskSequenceALTERA",
-          "aliases" : [ "TaskSequenceINTEL" ],
+          "enumerant" : "TaskSequenceINTEL",
           "value" : 6162,
-          "extensions" : [ "SPV_ALTERA_task_sequence", "SPV_INTEL_task_sequence" ],
+          "extensions" : [ "SPV_INTEL_task_sequence" ],
           "version" : "None"
         },
         {
@@ -17811,17 +17371,15 @@
           "version" : "None"
         },
         {
-          "enumerant" : "FPGALatencyControlALTERA",
-          "aliases" : [ "FPGALatencyControlINTEL" ],
+          "enumerant" : "FPGALatencyControlINTEL",
           "value" : 6171,
-          "extensions" : [ "SPV_ALTERA_fpga_latency_control", "SPV_INTEL_fpga_latency_control" ],
+          "extensions" : [ "SPV_INTEL_fpga_latency_control" ],
           "version" : "None"
         },
         {
-          "enumerant" : "FPGAArgumentInterfacesALTERA",
-          "aliases" : [ "FPGAArgumentInterfacesINTEL" ],
+          "enumerant" : "FPGAArgumentInterfacesINTEL",
           "value" : 6174,
-          "extensions" : [ "SPV_ALTERA_fpga_argument_interfaces", "SPV_INTEL_fpga_argument_interfaces" ],
+          "extensions" : [ "SPV_INTEL_fpga_argument_interfaces" ],
           "version" : "None"
         },
         {
@@ -17831,10 +17389,9 @@
           "version" : "None"
         },
         {
-          "enumerant" : "GlobalVariableFPGADecorationsALTERA",
-          "aliases" : [ "GlobalVariableFPGADecorationsINTEL" ],
+          "enumerant" : "GlobalVariableFPGADecorationsINTEL",
           "value" : 6189,
-          "extensions" : [ "SPV_ALTERA_global_variable_fpga_decorations", "SPV_INTEL_global_variable_fpga_decorations" ],
+          "extensions": [ "SPV_INTEL_global_variable_fpga_decorations" ],
           "version" : "None"
         },
         {
@@ -17876,28 +17433,6 @@
           "version" : "None"
         },
         {
-          "enumerant" : "UntypedVariableLengthArrayINTEL",
-          "value" : 6243,
-          "capabilities" : [ "VariableLengthArrayINTEL", "UntypedPointersKHR" ],
-          "extensions" : [ "SPV_INTEL_variable_length_array" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "SpecConditionalINTEL",
-          "value" : 6245,
-          "extensions" : [ "SPV_INTEL_function_variants" ],
-          "provisional" : true,
-          "version": "None"
-        },
-        {
-          "enumerant" : "FunctionVariantsINTEL",
-          "value" : 6246,
-          "capabilities" : [ "SpecConditionalINTEL" ],
-          "extensions" : [ "SPV_INTEL_function_variants" ],
-          "provisional" : true,
-          "version": "None"
-        },
-        {
           "enumerant" : "GroupUniformArithmeticKHR",
           "value" : 6400,
           "extensions" : [ "SPV_KHR_uniform_group_instructions"],
@@ -17925,13 +17460,6 @@
           "enumerant" : "RegisterLimitsINTEL",
           "value" : 6460,
           "extensions" : [ "SPV_INTEL_maximum_registers" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "BindlessImagesINTEL",
-          "value" : 6528,
-          "extensions" : [ "SPV_INTEL_bindless_images" ],
-          "provisional" : true,
           "version" : "None"
         }
       ]
@@ -18178,17 +17706,15 @@
       "kind" : "InitializationModeQualifier",
       "enumerants" : [
         {
-          "enumerant" : "InitOnDeviceReprogramALTERA",
-          "aliases" : [ "InitOnDeviceReprogramINTEL" ],
+          "enumerant" : "InitOnDeviceReprogramINTEL",
           "value" : 0,
-          "capabilities" : [ "GlobalVariableFPGADecorationsALTERA" ],
+          "capabilities" : [ "GlobalVariableFPGADecorationsINTEL" ],
           "version" : "None"
         },
         {
-          "enumerant" : "InitOnDeviceResetALTERA",
-          "aliases" : [ "InitOnDeviceResetINTEL" ],
+          "enumerant" : "InitOnDeviceResetINTEL",
           "value" : 1,
-          "capabilities" : [ "GlobalVariableFPGADecorationsALTERA" ],
+          "capabilities" : [ "GlobalVariableFPGADecorationsINTEL" ],
           "version" : "None"
         }
       ]
@@ -18360,18 +17886,6 @@
           "enumerant" : "BFloat16KHR",
           "value" : 0,
           "capabilities" : [ "BFloat16TypeKHR" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "Float8E4M3EXT",
-          "value" : 4214,
-          "capabilities" : [ "Float8EXT" ],
-          "version" : "None"
-        },
-        {
-          "enumerant" : "Float8E5M2EXT",
-          "value" : 4215,
-          "capabilities" : [ "Float8EXT" ],
           "version" : "None"
         }
       ]

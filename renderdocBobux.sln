@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{89059266-9C4E-4637-AB1D-BFF1DC15096B}"
 EndProject
@@ -80,6 +80,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Intel", "renderdoc\driver\ihv\intel\Intel.vcxproj", "{7FCB5FC5-1DBD-4DA6-83A0-6BA4E945BDA5}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ARM", "renderdoc\driver\ihv\arm\ARM.vcxproj", "{F9CCE6CA-0CA3-4A22-9C7B-881369955E62}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProcessCSV", "ProcessCSV\ProcessCSV.vcxproj", "{5034E04B-AEAD-4248-A21F-A10B22300136}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -273,6 +275,14 @@ Global
 		{F9CCE6CA-0CA3-4A22-9C7B-881369955E62}.Release|x64.Build.0 = Release|x64
 		{F9CCE6CA-0CA3-4A22-9C7B-881369955E62}.Release|x86.ActiveCfg = Release|Win32
 		{F9CCE6CA-0CA3-4A22-9C7B-881369955E62}.Release|x86.Build.0 = Release|Win32
+		{5034E04B-AEAD-4248-A21F-A10B22300136}.Development|x64.ActiveCfg = Release|x64
+		{5034E04B-AEAD-4248-A21F-A10B22300136}.Development|x64.Build.0 = Release|x64
+		{5034E04B-AEAD-4248-A21F-A10B22300136}.Development|x86.ActiveCfg = Release|Win32
+		{5034E04B-AEAD-4248-A21F-A10B22300136}.Development|x86.Build.0 = Release|Win32
+		{5034E04B-AEAD-4248-A21F-A10B22300136}.Release|x64.ActiveCfg = Release|x64
+		{5034E04B-AEAD-4248-A21F-A10B22300136}.Release|x64.Build.0 = Release|x64
+		{5034E04B-AEAD-4248-A21F-A10B22300136}.Release|x86.ActiveCfg = Release|Win32
+		{5034E04B-AEAD-4248-A21F-A10B22300136}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -307,5 +317,8 @@ Global
 		{40349AD9-5558-4DF4-84E2-11934DE90A11} = {4DA2F3E3-9A65-45DD-A69B-82C7757D4904}
 		{7FCB5FC5-1DBD-4DA6-83A0-6BA4E945BDA5} = {4DA2F3E3-9A65-45DD-A69B-82C7757D4904}
 		{F9CCE6CA-0CA3-4A22-9C7B-881369955E62} = {4DA2F3E3-9A65-45DD-A69B-82C7757D4904}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FAD00A03-B937-4569-A267-C920DBA2C8FB}
 	EndGlobalSection
 EndGlobal
