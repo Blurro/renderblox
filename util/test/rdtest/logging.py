@@ -75,7 +75,6 @@ class TestLogger:
         self.indent()
 
         self.failed = False
-        self.logged_exception = False
 
     def end_test(self, test_name: str, print_footer: bool=True):
         if self.failed:

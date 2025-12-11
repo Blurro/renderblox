@@ -407,7 +407,7 @@ class TestCase:
     def get_source_shader_var_value(self, sourceVars: List[rd.SourceVariableMapping], name, varType, debuggerVars):
         sourceVar = [v for v in sourceVars if v.name == name]
         if len(sourceVar) != 1:
-            raise TestFailureException(f"Couldn't find source variable {name} type:{varType}")
+            raise TestFailureException(f"Couldn't find source variable {name} {varType}")
 
         scalarType, countElems = self.parse_shader_var_type(varType)
 
@@ -417,7 +417,7 @@ class TestCase:
         elif scalarType == 'int':
             return list(debugged.value.s32v[0:countElems])
         else:
-            raise TestFailureException(f"Unhandled scalarType {scalarType} type:{varType}")
+            raise TestFailureException(f"Unhandled scalarType {scalarType} {varType}")
         return None
 
     def check_task_data(self, task_ref, task_data):

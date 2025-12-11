@@ -96,9 +96,10 @@ public:
   void exportDataCustom(const QString &basePath, std::shared_ptr<int> exportIdxPtr, int totalEids,
                         std::function<void()> done);
 
- void SelectSiblingAndDumpVSPositions(const QModelIndex &refIdx, uint32_t referenceEID, int instanceCount);
+  void SelectSiblingAndDumpVSPositions(const QString &dirPath, const QModelIndex &,
+                                                     uint32_t, int instanceCount, int instanceTrack);
 
-void exportData(
+  void exportData(
       const BufferExport &params, const QString &forcedName = QString(),
       std::shared_ptr<int> exportIdxPtr = std::make_shared<int>(0), int totalEids = 1,
       std::function<void()> done = []() {}, QTableView *overrideView = nullptr);

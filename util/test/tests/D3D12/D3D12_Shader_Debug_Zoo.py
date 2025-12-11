@@ -90,50 +90,37 @@ class D3D12_Shader_Debug_Zoo(rdtest.TestCase):
                 rdtest.log.end_section(sectionName)
 
         rdtest.log.begin_section("MSAA tests")
+        test_marker: rd.ActionDescription = self.find_action("MSAA")
+        action = test_marker.next
+        self.controller.SetFrameEvent(action.eventId, False)
+        pipe: rd.PipeState = self.controller.GetPipelineState()
+        for (x,y) in [(4, 4), (4, 5), (3, 4), (3, 5)]:
+            for test in range(4):
+                # Debug the shader
+                inputs = rd.DebugPixelInputs()
+                inputs.sample = test
+                trace: rd.ShaderDebugTrace = self.controller.DebugPixel(x, y, inputs)
 
-        # Enable MSAA tests when DXIL shader debugger supports MSAA instructions and SV_Barycentrics
-        msaaMarkers = [
-            "MSAA sm_5_0",
-            "MSAA sm_6_0",
-            "MSAA sm_6_1",
-        ]
-        msaaMarkers = [
-            "MSAA sm_5_0",
-        ]
-        for marker in msaaMarkers:
-            rdtest.log.begin_section(marker)
-            test_marker: rd.ActionDescription = self.find_action(marker)
-            action = test_marker.next
-            self.controller.SetFrameEvent(action.eventId, False)
-            pipe: rd.PipeState = self.controller.GetPipelineState()
-            for (x,y) in [(4, 4), (4, 5), (3, 4), (3, 5)]:
-                for test in range(4):
-                    # Debug the shader
-                    inputs = rd.DebugPixelInputs()
-                    inputs.sample = test
-                    trace: rd.ShaderDebugTrace = self.controller.DebugPixel(x, y, inputs)
+                # Validate that the correct sample index was debugged
+                sampRegister = self.find_input_source_var(trace, rd.ShaderBuiltin.MSAASampleIndex)
+                sampInput = [var for var in trace.inputs if var.name == sampRegister.variables[0].name][0]
+                if sampInput.value.u32v[0] != test:
+                    rdtest.log.error("Test {} did not pick the correct sample.".format(test))
 
-                    # Validate that the correct sample index was debugged
-                    sampRegister = self.find_input_source_var(trace, rd.ShaderBuiltin.MSAASampleIndex)
-                    sampInput = [var for var in trace.inputs if var.name == sampRegister.variables[0].name][0]
-                    if sampInput.value.u32v[0] != test:
-                        rdtest.log.error("Test {} did not pick the correct sample.".format(test))
+                cycles, variables = self.process_trace(trace)
 
-                    cycles, variables = self.process_trace(trace)
+                output = self.find_output_source_var(trace, rd.ShaderBuiltin.ColorOutput, 0)
 
-                    output = self.find_output_source_var(trace, rd.ShaderBuiltin.ColorOutput, 0)
+                debugged = self.evaluate_source_var(output, variables)
+                self.controller.FreeTrace(trace)
 
-                    debugged = self.evaluate_source_var(output, variables)
-                    self.controller.FreeTrace(trace)
-
-                    # Validate the debug output result
-                    try:
-                        self.check_pixel_value(pipe.GetOutputTargets()[0].resource, x, y, debugged.value.f32v[0:4], sub=rd.Subresource(0, 0, test))
-                    except rdtest.TestFailureException as ex:
-                        failed = True
-                        rdtest.log.error("Test {} did not match. {}".format(test, str(ex)))
-
-            rdtest.log.end_section(marker)
+                # Validate the debug output result
+                try:
+                    self.check_pixel_value(pipe.GetOutputTargets()[0].resource, x, y, debugged.value.f32v[0:4], sub=rd.Subresource(0, 0, test))
+                except rdtest.TestFailureException as ex:
+                    failed = True
+                    rdtest.log.error("Test {} did not match. {}".format(test, str(ex)))
+                    continue
 
         rdtest.log.end_section("MSAA tests")
 

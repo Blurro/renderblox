@@ -45,6 +45,10 @@
 #include "toolwindowmanager/ToolWindowManagerArea.h"
 #include "ui_TextureViewer.h"
 
+#include <iostream>
+#include "Code/CaptureContext.h"
+#include "EventBrowser.h"
+
 float area(const QSizeF &s)
 {
   return s.width() * s.height();
@@ -3164,6 +3168,21 @@ void TextureViewer::OnEventChanged(uint32_t eventId)
     m_ReadWriteResources[(uint32_t)stage] = Following::GetReadWriteResources(m_Ctx, stage, true);
   }
 
+  // ---------------- force selection of the texture at index of diffuse in Pixel shader stage
+  CaptureContext &ctxImpl = static_cast<CaptureContext &>(m_Ctx);
+  int forcedIdx = ctxImpl.s_ForcedPixelTextureIndex;
+  if(forcedIdx >= 0 && ctxImpl.g_ForceSavingTex == true)
+  {
+    const rdcarray<UsedDescriptor> &ro = m_ReadOnlyResources[(uint32_t)ShaderStage::Pixel];
+    if(forcedIdx < (int)ro.size())
+    {
+      m_Following = Following(*this, FollowType::ReadOnly, ShaderStage::Pixel,
+                              ro[forcedIdx].access.index, ro[forcedIdx].access.arrayElement);
+      m_LockedId = ro[forcedIdx].descriptor.resource;
+      m_TexDisplay.resourceId = ro[forcedIdx].descriptor.resource;
+    }
+  }
+
   UI_UpdateCachedTexture();
 
   TextureDescription *CurrentTexture = GetCurrentTexture();
@@ -3352,6 +3371,9 @@ void TextureViewer::OnEventChanged(uint32_t eventId)
 
   if(ui->autoFit->isChecked())
     AutoFitRange();
+
+  // ------------ new
+  ctxImpl.g_ReadyToSaveTex = true;
 }
 
 QVariant TextureViewer::persistData()
@@ -3372,7 +3394,6 @@ QVariant TextureViewer::persistData()
   state[lit("columns")] = columns;
   state[lit("backCol")] = backCol;
   state[lit("checker")] = !backCol.isValid();
-
   return state;
 }
 
@@ -4011,18 +4032,26 @@ void TextureViewer::on_resourceDetails_clicked()
   }
 }
 
-void TextureViewer::on_saveTex_clicked()
+void TextureViewer::on_saveTex_clicked(const QString &path)
 {
+  QString outPath = path;
+  if(outPath.isEmpty())
+  {
+    outPath = QFileDialog::getSaveFileName(this, QStringLiteral("Save Texture"),
+                                           QStringLiteral("texture.png"),
+                                           QStringLiteral("PNG Files (*.png)"));
+    if(outPath.isEmpty())
+      return;
+  }
   TextureDescription *texptr = GetCurrentTexture();
-
   if(!texptr || !m_Output)
     return;
 
-  // overwrite save params with current texture display settings
   m_SaveConfig.resourceId = m_TexDisplay.resourceId;
   m_SaveConfig.typeCast = m_TexDisplay.typeCast;
   m_SaveConfig.slice.sliceIndex = (int)m_TexDisplay.subresource.slice;
-  m_SaveConfig.mip = (int)m_TexDisplay.subresource.mip;
+  m_SaveConfig.mip = 0;
+  m_SaveConfig.destType = FileType::PNG;
 
   m_SaveConfig.channelExtract = -1;
   if(m_TexDisplay.red && !m_TexDisplay.green && !m_TexDisplay.blue && !m_TexDisplay.alpha)
@@ -4038,63 +4067,15 @@ void TextureViewer::on_saveTex_clicked()
   m_SaveConfig.comp.whitePoint = m_TexDisplay.rangeMax;
   m_SaveConfig.alphaCol = m_TexDisplay.backgroundColor;
 
-  if(m_TexDisplay.customShaderId != ResourceId())
+  ResultDetails result = {ResultCode::Succeeded};
+
+  m_Ctx.Replay().BlockInvoke(
+      [this, &result, outPath](IReplayController *r) { result = r->SaveTexture(m_SaveConfig, outPath); });
+
+  if(!result.OK())
   {
-    ResourceId id;
-    m_Ctx.Replay().BlockInvoke(
-        [this, &id](IReplayController *r) { id = m_Output->GetCustomShaderTexID(); });
-
-    if(id != ResourceId())
-    {
-      m_SaveConfig.resourceId = id;
-      m_SaveConfig.typeCast = CompType::Typeless;
-    }
-  }
-
-  ResourceId overlayTexID;
-  if(m_TexDisplay.overlay != DebugOverlay::NoOverlay)
-  {
-    m_Ctx.Replay().BlockInvoke([this, &overlayTexID](IReplayController *r) {
-      overlayTexID = m_Output->GetDebugOverlayTexID();
-    });
-  }
-  const bool hasSelectedOverlay = (m_TexDisplay.overlay != DebugOverlay::NoOverlay);
-  const bool hasOverlay = (hasSelectedOverlay && overlayTexID != ResourceId());
-  TextureSaveDialog saveDialog(*texptr, hasOverlay, m_SaveConfig, this);
-  int res = RDDialog::show(&saveDialog);
-
-  m_SaveConfig = saveDialog.config();
-
-  if(saveDialog.saveOverlayInstead())
-  {
-    m_SaveConfig.resourceId = overlayTexID;
-    m_SaveConfig.typeCast = CompType::Typeless;
-
-    if(m_TexDisplay.overlay == DebugOverlay::QuadOverdrawDraw ||
-       m_TexDisplay.overlay == DebugOverlay::QuadOverdrawPass ||
-       m_TexDisplay.overlay == DebugOverlay::TriangleSizeDraw ||
-       m_TexDisplay.overlay == DebugOverlay::TriangleSizePass)
-    {
-      m_SaveConfig.comp.blackPoint = 0.0f;
-      m_SaveConfig.comp.whitePoint = 255.0f;
-    }
-  }
-
-  if(res)
-  {
-    ANALYTIC_SET(Export.Texture, true);
-
-    ResultDetails result = {ResultCode::Succeeded};
-    QString fn = saveDialog.filename();
-
-    m_Ctx.Replay().BlockInvoke(
-        [this, &result, fn](IReplayController *r) { result = r->SaveTexture(m_SaveConfig, fn); });
-
-    if(!result.OK())
-    {
-      RDDialog::critical(NULL, tr("Error saving texture"),
-                         tr("Error saving texture %1:\n\n%2").arg(fn).arg(result.Message()));
-    }
+    RDDialog::critical(NULL, tr("Error saving texture"),
+                       tr("Error saving texture %1:\n\n%2").arg(path).arg(result.Message()));
   }
 }
 

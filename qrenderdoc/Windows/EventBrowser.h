@@ -124,6 +124,8 @@ public:
   explicit EventBrowser(ICaptureContext &ctx, QWidget *parent = 0);
   ~EventBrowser();
 
+  void EventBrowser::processTexEIDs(const QString &dirPath, const QString &fileName, QProgressDialog *progressDialog, const std::vector<uint32_t> &eids);
+
   // IEventBrowser
   QWidget *Widget() override { return this; }
   void UpdateDurationColumn() override;

@@ -53,6 +53,9 @@
 
 #include <iostream>
 
+#include <atomic>
+std::atomic<int> g_exportDone(-1);
+
 struct FixedVarTag
 {
   FixedVarTag() = default;
@@ -6344,29 +6347,21 @@ void BufferViewer::exportCSV(QTextStream &ts, const QString &prefix, RDTreeWidge
 }
 
 //------------new
-void BufferViewer::SelectSiblingAndDumpVSPositions(const QModelIndex &, uint32_t, int instanceCount)
+void BufferViewer::SelectSiblingAndDumpVSPositions(const QString &dirPath, const QModelIndex &, uint32_t, int instanceCount, int instanceTrack)
 {
-  ShowMeshData(MeshDataStage::VSOut);
-  QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+  g_exportDone = -1;
+  for(int inst = 0; inst < instanceCount; ++inst)
+  {
+    ui->instance->setValue(inst);
+    ShowMeshData(MeshDataStage::VSOut);
 
-  auto idx = std::make_shared<int>(0);
-  auto doNext = std::make_shared<std::function<void()>>();
+    QString path = dirPath + QStringLiteral("datablock%1").arg(instanceTrack + inst);
 
-  *doNext = [this, instanceCount, idx, doNext]() {
-    if(*idx >= instanceCount)
-      return;    // finished all instances, return to caller
+    exportDataCustom(path, std::make_shared<int>(0), 1, [inst]() { g_exportDone = inst; });
 
-    SetCurrentInstance(*idx);
-    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
-
-    QString path = QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/datablock%1").arg(*idx);
-
-    exportDataCustom(path, std::make_shared<int>(0), 1, [idx, doNext]() {
-      (*idx)++;
-      (*doNext)();    // recurse to next instance
-    });
-  };
-  (*doNext)();    // start the recursion
+    while(g_exportDone < inst)
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
+  }
 }
 
 void BufferViewer::exportDataCustom(const QString &basePath, std::shared_ptr<int> exportIdxPtr,
@@ -6766,16 +6761,18 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
     if(checkFile.open(QIODevice::ReadOnly | QIODevice::Text))
     {
       QTextStream ts(&checkFile);
-      QString line1 = ts.readLine();    // first line
-      QString line2 = ts.readLine();    // second line (may be empty or missing)
+      QString line1 = ts.readLine();
+      QString line2 = ts.readLine();
 
-      bool missing = line2.isNull();
-      bool blank = line2.trimmed().isEmpty();
+      bool l1Missing = line1.isNull();
+      bool l1Blank = line1.trimmed().isEmpty();
+      bool l2Missing = line2.isNull();
+      bool l2Blank = line2.trimmed().isEmpty();
 
-      if(missing || blank)
+      if(l1Missing || l1Blank || l2Missing || l2Blank)
       {
-        std::cout << "retrying csv export due to empty csv written\n";
-        QTimer::singleShot(100, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
+        //std::cout << "retrying csv export due to empty csv written\n";
+        QTimer::singleShot(0, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
           exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
         });
         return;
@@ -6789,11 +6786,34 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
     QFile fb(binFile);
     if(fb.size() < 4)
     {
-      std::cout << "retrying bin export due to empty bin written\n";
-      QTimer::singleShot(100, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
+      //std::cout << "retrying bin export due to empty bin written\n";
+      QTimer::singleShot(0, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
         exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
       });
       return;
+    }
+    // check for all-zero file (first 1024 bytes) man im really fighting renderdoc with ts idk a better way lol
+    if(fb.open(QIODevice::ReadOnly))
+    {
+      QByteArray firstBytes = fb.read(1024);
+      fb.close();
+      bool allZero = true;
+      for(int i = 0; i < firstBytes.size(); i++)
+      {
+        if(static_cast<unsigned char>(firstBytes[i]) != 0)
+        {
+          allZero = false;
+          break;
+        }
+      }
+      if(allZero)
+      {
+        std::cout << "retrying bin export due to all-zero bin\n";
+        QTimer::singleShot(0, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
+              exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
+            });
+        return;
+      }
     }
   }
   done();    //---------------- blurro callback

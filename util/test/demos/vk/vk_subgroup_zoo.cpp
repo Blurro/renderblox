@@ -143,8 +143,6 @@ void main()
 
   const std::string comp = common + R"EOSHADER(
 
-#extension GL_EXT_shader_quad_control : require
-
 struct Output
 {
   vec4 vals[1024];
@@ -258,29 +256,6 @@ void main()
       testResult.w = float(subgroupAllEqual(id >= 28));
     }
   }
-  else if(IsTest(7))
-  {
-    // subgroupQuadBroadcast : unit tests
-    testResult.x = float(subgroupQuadBroadcast(id, 0));
-    testResult.y = float(subgroupQuadBroadcast(id, 1));
-    testResult.z = float(subgroupQuadBroadcast(id, 2));
-    testResult.w = float(subgroupQuadBroadcast(id, 3));
-  }
-  else if(IsTest(8))
-  {
-    // subgroupQuadSwapDiagonal, subgroupQuadSwapHorizontal, subgroupQuadSwapVertical : unit tests
-    testResult.x = float(subgroupQuadSwapDiagonal(id));
-    testResult.y = float(subgroupQuadSwapHorizontal(id));
-    testResult.z = float(subgroupQuadSwapVertical(id));
-    testResult.w = subgroupQuadBroadcast(testResult.x, 2);
-  }
-  else if(IsTest(9))
-  {
-    testResult.x = float(subgroupQuadAny(id*2 > id+10));
-    testResult.y = float(subgroupQuadAll(id < gl_SubgroupSize));
-    testResult.z = subgroupQuadBroadcast(testResult.x, 2);
-    testResult.w = subgroupQuadBroadcast(testResult.y, 2);
-  }
   SetOutput(testResult);
 }
 
@@ -290,9 +265,6 @@ void main()
 
   void Prepare(int argc, char **argv)
   {
-    devExts.push_back(VK_KHR_SHADER_MAXIMAL_RECONVERGENCE_EXTENSION_NAME);
-    devExts.push_back(VK_KHR_SHADER_QUAD_CONTROL_EXTENSION_NAME);
-
     VulkanGraphicsTest::Prepare(argc, argv);
 
     if(!Avail.empty())
@@ -329,16 +301,6 @@ void main()
 
     if((subProps.supportedStages & VK_SHADER_STAGE_COMPUTE_BIT) == 0)
       Avail = "Missing compute subgroup support";
-
-    static VkPhysicalDeviceShaderQuadControlFeaturesKHR quadControlFeats = {
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
-    };
-
-    getPhysFeatures2(&quadControlFeats);
-    if(quadControlFeats.shaderQuadControl == VK_FALSE)
-      Avail = "Missing compute quad support";
-
-    devInfoNext = &quadControlFeats;
   }
 
   int main()
@@ -464,28 +426,28 @@ void main()
 
     macros["GROUP_SIZE_X"] = "256";
     macros["GROUP_SIZE_Y"] = "1";
-    comppipe_name[0] = fmt::format("{}x{}", macros["GROUP_SIZE_X"], macros["GROUP_SIZE_Y"]);
+    comppipe_name[0] = "256x1";
     comppipe[0] = createComputePipeline(vkh::ComputePipelineCreateInfo(
         layout, CompileShaderModule(comp, ShaderLang::glsl, ShaderStage::comp, "main", macros,
                                     SPIRVTarget::vulkan11)));
 
     macros["GROUP_SIZE_X"] = "128";
     macros["GROUP_SIZE_Y"] = "2";
-    comppipe_name[1] = fmt::format("{}x{}", macros["GROUP_SIZE_X"], macros["GROUP_SIZE_Y"]);
+    comppipe_name[1] = "128x2";
     comppipe[1] = createComputePipeline(vkh::ComputePipelineCreateInfo(
         layout, CompileShaderModule(comp, ShaderLang::glsl, ShaderStage::comp, "main", macros,
                                     SPIRVTarget::vulkan11)));
 
     macros["GROUP_SIZE_X"] = "8";
     macros["GROUP_SIZE_Y"] = "128";
-    comppipe_name[2] = fmt::format("{}x{}", macros["GROUP_SIZE_X"], macros["GROUP_SIZE_Y"]);
+    comppipe_name[2] = "8x128";
     comppipe[2] = createComputePipeline(vkh::ComputePipelineCreateInfo(
         layout, CompileShaderModule(comp, ShaderLang::glsl, ShaderStage::comp, "main", macros,
                                     SPIRVTarget::vulkan11)));
 
-    macros["GROUP_SIZE_X"] = "152";
+    macros["GROUP_SIZE_X"] = "150";
     macros["GROUP_SIZE_Y"] = "1";
-    comppipe_name[3] = fmt::format("{}x{}", macros["GROUP_SIZE_X"], macros["GROUP_SIZE_Y"]);
+    comppipe_name[3] = "150x1";
     comppipe[3] = createComputePipeline(vkh::ComputePipelineCreateInfo(
         layout, CompileShaderModule(comp, ShaderLang::glsl, ShaderStage::comp, "main", macros,
                                     SPIRVTarget::vulkan11)));

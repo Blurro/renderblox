@@ -67,6 +67,8 @@
 
 #include "pipestate.inl"
 
+#include <iostream>
+
 CaptureContext::CaptureContext(PersistantConfig &cfg) : m_Config(cfg)
 {
   RENDERDOC_PROFILEFUNCTION();
@@ -1588,6 +1590,44 @@ void CaptureContext::ExportCapture(const CaptureFileFormat &fmt, const rdcstr &e
   }
 }
 
+int CaptureContext::s_ForcedPixelTextureIndex = -1;
+bool CaptureContext::g_ReadyToSaveTex = false;
+bool CaptureContext::g_ForceSavingTex = false;
+
+void CaptureContext::SaveCurrentTexture(const QString &dirPath, const QString &fileName, int idx)
+{
+  QString path = dirPath + fileName + QStringLiteral("%1.png").arg(idx);
+
+  // wait until textureviewer signals ready
+  QElapsedTimer readyTimer;
+  readyTimer.start();
+  while(!g_ReadyToSaveTex)
+  {
+    if(readyTimer.elapsed() > 5000)
+    {
+      qWarning() << "SaveCurrentTexture timeout waiting for g_ReadyToSaveTex";
+      return;
+    }
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
+  }
+
+  if(m_TextureViewer)
+    m_TextureViewer->on_saveTex_clicked(path);
+
+  // keep checking file exists before finishing, for up to 5 seconds
+  QElapsedTimer t;
+  t.start();
+  while(!QFile::exists(path))
+  {
+    if(t.elapsed() > 5000)
+    {
+      qWarning() << "SaveCurrentTexture timeout waiting for file:" << path;
+      return;
+    }
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
+  }
+}
+
 void CaptureContext::SetEventID(const rdcarray<ICaptureViewer *> &exclude, uint32_t selectedEventID,
                                 uint32_t eventId, bool force)
 {
@@ -1620,6 +1660,27 @@ void CaptureContext::SetEventID(const rdcarray<ICaptureViewer *> &exclude, uint3
     m_CurGLPipelineState = r->GetGLPipelineState();
     m_CurVulkanPipelineState = r->GetVulkanPipelineState();
     m_CurPipelineState = &r->GetPipelineState();
+
+    // --------------------- get the diffuse texture index
+    if(m_CurD3D11PipelineState && m_CurD3D11PipelineState->pixelShader.reflection)
+    {
+      const ShaderReflection *psRefl = m_CurD3D11PipelineState->pixelShader.reflection;
+      int idx = 0;
+      for(const ShaderResource &res : psRefl->readOnlyResources)
+      {
+        if(res.isTexture)
+        {
+          std::string n = res.name.c_str();
+          if(n.find("Diffuse") != std::string::npos)
+          {
+            // store in static global
+            s_ForcedPixelTextureIndex = idx;
+            break;
+          }
+          idx++;
+        }
+      }
+    }
 
     done = true;
   });

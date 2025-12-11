@@ -11,7 +11,7 @@ class D3D12_Resource_Mapping_Zoo(rdtest.TestCase):
 
         if not pipe.GetShaderReflection(rd.ShaderStage.Pixel).debugInfo.debuggable:
             rdtest.log.print("Skipping undebuggable shader at {}.".format(test_name))
-            return True
+            return
 
         # Debug the shader
         trace: rd.ShaderDebugTrace = self.controller.DebugPixel(x, y, rd.DebugPixelInputs())
@@ -37,12 +37,7 @@ class D3D12_Resource_Mapping_Zoo(rdtest.TestCase):
         if not self.controller.GetAPIProperties().shaderDebugging:
             rdtest.log.success("Shader debugging not enabled, skipping test")
             return
-        if not self.check_capture_internal():
-            raise rdtest.TestFailureException("Some tests were not as expected")
 
-        rdtest.log.success("All tests matched")
-
-    def check_capture_internal(self) -> bool:
         failed = False
 
         rdtest.log.begin_section("SM5.x tests")
@@ -82,7 +77,7 @@ class D3D12_Resource_Mapping_Zoo(rdtest.TestCase):
         test_marker: rd.ActionDescription = self.find_action("SM6.0")
         if test_marker is None:
             rdtest.log.print("No SM6.0 action to test")
-            return not failed
+            return
         
         rdtest.log.begin_section("SM6.0 tests")
 
@@ -121,7 +116,7 @@ class D3D12_Resource_Mapping_Zoo(rdtest.TestCase):
         test_marker: rd.ActionDescription = self.find_action("SM6.6")
         if test_marker is None:
             rdtest.log.print("No SM6.6 action to test")
-            return not failed
+            return
 
         rdtest.log.begin_section("SM6.6 tests")
 
@@ -157,4 +152,7 @@ class D3D12_Resource_Mapping_Zoo(rdtest.TestCase):
         rdtest.log.end_section("Bindless tests")
         rdtest.log.end_section("SM6.6 tests")
 
-        return not failed
+        if failed:
+            raise rdtest.TestFailureException("Some tests were not as expected")
+
+        rdtest.log.success("All tests matched")

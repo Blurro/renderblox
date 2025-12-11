@@ -130,6 +130,8 @@ private:
   };
 
 public:
+  void on_saveTex_clicked(const QString &path = QString());
+
   explicit TextureViewer(ICaptureContext &ctx, QWidget *parent = 0);
   ~TextureViewer();
 
@@ -191,7 +193,6 @@ private slots:
   void on_viewTexBuffer_clicked();
   void on_resourceDetails_clicked();
   void on_texListShow_clicked();
-  void on_saveTex_clicked();
   void on_debugPixelContext_clicked();
   void on_pixelHistory_clicked();
 

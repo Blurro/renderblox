@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
  * The MIT License (MIT)
  *
  * Copyright (c) 2019-2025 Baldur Karlsson
@@ -63,6 +63,7 @@
 #include <QElapsedTimer>
 #include <iostream>
 #include <QProgressDialog>
+#include "Code/CaptureContext.h"
 
 struct EventBrowserPersistentStorage : public CustomPersistentStorage
 {
@@ -5253,6 +5254,71 @@ void EventBrowser::events_keyPress(QKeyEvent *event)
   }
 }
 
+void EventBrowser::processTexEIDs(const QString &dirPath, const QString &fileName, QProgressDialog *progressDialog, const std::vector<uint32_t> &eids)
+{
+  // update dialog
+  progressDialog->setLabelText(QStringLiteral("Exporting textures..."));
+  QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
+
+ std::vector<uint32_t> texEIDs;
+
+  QString tempPath = QCoreApplication::applicationDirPath() + QStringLiteral("/texeids.txt");
+  QFile file(tempPath);
+  if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+  {
+    QTextStream in(&file);
+    while(!in.atEnd())
+    {
+      bool ok = false;
+      int idx = in.readLine().trimmed().toInt(&ok);
+      if(!ok)
+        continue;
+      if(idx < 0 || (size_t)idx >= eids.size())
+        continue;
+
+      texEIDs.push_back(eids[idx]);
+    }
+    file.close();
+  }
+  else
+  {
+    std::cerr << "failed to open texeids.txt\n";
+  }
+  remove(tempPath.toUtf8());
+
+  //if(texEIDs.size() > 1) texEIDs.resize(1); // force just 1 export
+
+  // recursive texture export (sequential, synchronous via callback)
+  auto exportNextTex = std::make_shared<std::function<void(int)>>();
+  auto texIdx = std::make_shared<int>(0);
+
+  CaptureContext &ctxImpl = static_cast<CaptureContext &>(m_Ctx);
+  ctxImpl.g_ForceSavingTex = true;
+
+ *exportNextTex = [this, &ctxImpl, texEIDs, exportNextTex, dirPath, fileName](int idx) {
+    if(idx >= (int)texEIDs.size())
+    {
+      ctxImpl.g_ForceSavingTex = false;
+      return;
+    }
+
+    uint32_t eid = texEIDs[idx];
+
+    ctxImpl.g_ReadyToSaveTex = false;
+
+    SelectEvent(eid);
+
+    // fully blocking save - returns only when file exists
+    ctxImpl.SaveCurrentTexture(dirPath, fileName, idx);
+
+    (*exportNextTex)(idx + 1);
+  };
+  (*exportNextTex)(0);
+
+  progressDialog->reset();
+  QMessageBox::information(nullptr, QStringLiteral("Done"), QStringLiteral("Created FBX!\n"));
+}
+
 void EventBrowser::events_contextMenu(const QPoint &pos)
 {
   QModelIndex index = ui->events->indexAt(pos);
@@ -5318,6 +5384,17 @@ void EventBrowser::events_contextMenu(const QPoint &pos)
       return;
     }
 
+     QString fullPath = QFileDialog::getSaveFileName(nullptr, QStringLiteral("Save FBX"),
+                                                    QStringLiteral("RobloxAvatar.fbx"),
+                                                    QStringLiteral("FBX Files (*.fbx)"));
+    if(fullPath.isEmpty())
+      return;
+    QFileInfo fi(fullPath);
+    QString fileName = fi.completeBaseName();    // e.g. "RobloxAvatar" without ".fbx"
+    QString dirPath = fi.absolutePath();         // directory only
+    if(!dirPath.endsWith(QDir::separator()))
+      dirPath += QDir::separator();
+
     QModelIndex container = index;
     int count = container.model()->rowCount(container);
 
@@ -5344,26 +5421,30 @@ void EventBrowser::events_contextMenu(const QPoint &pos)
       return;
     }
 
-    std::cout << "found " << eids.size() << " real child events\n";
+    //std::cout << "found " << eids.size() << " real child events\n";
 
     // export reference first
     SelectEvent(this->referenceEID);
     QString name = index.data(Qt::DisplayRole).toString();
     if(name.contains(QStringLiteral("(6, 1)"), Qt::CaseInsensitive))
     {
-      QMessageBox::warning(nullptr, QStringLiteral("Error"),
-                           QStringLiteral("Reference no longer valid! Set it again"));
+      QMessageBox::warning(nullptr, QStringLiteral("Error"), QStringLiteral("Reference no longer valid! Set it again"));
       return;
     }
-    QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
     BufferViewer *rbv = nullptr;
     for(QWidget *w : qApp->allWidgets())
       if((rbv = qobject_cast<BufferViewer *>(w)))
         break;
-    // rbv->setExportPath(QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/referenceverts"));
-    GUIInvoke::call(this, [rbv]() {
-      rbv->exportDataCustom(QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/referenceverts"),
-                            std::make_shared<int>(0), 1, []() {});
+    if(!rbv)
+      return;
+    auto afterReferenceExport = [this, index, eids]() {
+      // execution continues here after reference export finishes
+    };
+    GUIInvoke::call(this, [rbv, dirPath, afterReferenceExport]() {
+      rbv->exportDataCustom(dirPath + QStringLiteral("referenceverts"),
+                            std::make_shared<int>(0), 1,
+                            [afterReferenceExport]() { afterReferenceExport(); });
     });
 
     // locate QModelIndex for referenceEID
@@ -5387,105 +5468,97 @@ void EventBrowser::events_contextMenu(const QPoint &pos)
     findRef(QModelIndex());
 
     // clear out existing exports
-    int deletidx = 0;
-    while(true)
-    {
-      QString baseOut =
-          QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/robloxmesh_out%1").arg(deletidx);
-      QString baseIn =
-          QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/robloxmesh_in%1").arg(deletidx);
-
-      QString outCsv = baseOut + QStringLiteral(".csv");
-      QString outBin = baseOut + QStringLiteral(".bin");
-      QString inCsv = baseIn + QStringLiteral(".csv");
-      QString inBin = baseIn + QStringLiteral(".bin");
-      // if none of the four exist, finish
-      if(!QFileInfo::exists(outCsv) && !QFileInfo::exists(outBin) && !QFileInfo::exists(inCsv) &&
-         !QFileInfo::exists(inBin))
-      {
-        break;
-      }
-      QFile::remove(outCsv);
-      QFile::remove(outBin);
-      QFile::remove(inCsv);
-      QFile::remove(inBin);
-      deletidx++;
-    }
+    QDir dir(dirPath);
+    QStringList files = dir.entryList(QStringList() << QStringLiteral("robloxmesh_*.bin") << QStringLiteral("robloxmesh_*.csv") << QStringLiteral("datablock*.bin"), QDir::Files);
+    for(const QString &f : files)
+      QFile::remove(dir.filePath(f));
 
     // create a shared pointer for the dialog so it lives across all exports
     auto progressDialog = std::make_shared<QProgressDialog>();
     progressDialog->setCancelButton(nullptr);
     progressDialog->setWindowFlags(progressDialog->windowFlags() & ~Qt::WindowCloseButtonHint & ~Qt::WindowContextHelpButtonHint);
-    progressDialog->setWindowTitle(QStringLiteral("RenderDoc Roblox"));
+    progressDialog->setWindowTitle(QStringLiteral("RenderBlox"));
     progressDialog->setLabelText(tr("Exporting data..."));
     progressDialog->setRange(0, (int)eids.size());
     progressDialog->setModal(true);
     progressDialog->show();
     QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
 
-    // select first sibling to ref eid and export all cubes
+    // select and dump all siblings' VS positions
     QModelIndex parent = refIdx.parent();
+    int instanceTrack = 0;
     for(int i = 0; i < model->rowCount(parent); i++)
     {
       QModelIndex sib = model->index(i, 1, parent);
       bool ok = false;
       uint32_t eid = sib.data(Qt::DisplayRole).toString().toUInt(&ok);
-      if(ok && eid != (uint32_t)this->referenceEID)
-      {
-        if(SelectEvent(eid))
-        {
-          QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+      if(!ok || eid == (uint32_t)this->referenceEID)
+        continue;
+      if(!SelectEvent(eid))
+        continue;
 
-          BufferViewer *rbv = nullptr;
-          for(QWidget *w : qApp->allWidgets())
-            if((rbv = qobject_cast<BufferViewer *>(w)))
-              break;
+      BufferViewer *rbv = nullptr;
+      for(QWidget *w : qApp->allWidgets())
+        if((rbv = qobject_cast<BufferViewer *>(w)))
+          break;
+      if(!rbv)
+        continue;
 
-          if(rbv)
-          {
-            QModelIndex nameIdx = model->index(i, 0, parent);
-            QString name = nameIdx.data(Qt::DisplayRole).toString();
-            QRegularExpression re(QStringLiteral(".*\\((\\d+)\\s*,\\s*(\\d+)\\)"));
-            QRegularExpressionMatch match = re.match(name);
-            int instanceCount = match.captured(2).toInt();
-            rbv->SelectSiblingAndDumpVSPositions(refIdx, this->referenceEID, instanceCount);
-          }
-        }
-        break;
-      }
+      QModelIndex nameIdx = model->index(i, 0, parent);
+      QString name = nameIdx.data(Qt::DisplayRole).toString();
+      QRegularExpression re(QStringLiteral(".*\\((\\d+)\\s*,\\s*(\\d+)\\)"));
+      QRegularExpressionMatch match = re.match(name);
+      if(!match.hasMatch())
+        continue;
+
+      int instanceCount = match.captured(2).toInt();
+      rbv->SelectSiblingAndDumpVSPositions(dirPath, refIdx, this->referenceEID, instanceCount, instanceTrack);
+      instanceTrack += instanceCount;
     }
 
     // recursive to export sequentially
     auto exportidx = std::make_shared<int>(0);
     auto exportNext = std::make_shared<std::function<void(int)>>();
 
-    *exportNext = [this, eids, exportNext, exportidx, progressDialog](int idx) {
+    *exportNext = [this, eids, exportNext, exportidx, progressDialog, dirPath, fileName](int idx) {
       if(idx >= (int)eids.size())
       {
         progressDialog->setLabelText(QStringLiteral("Building FBX..."));
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
 
         QString exePath =
             QCoreApplication::applicationDirPath() + QStringLiteral("/ProcessCSV.exe");
-        QString arg = QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/robloxmesh");
+        QString arg = dirPath + QStringLiteral("robloxmesh");
+        QString arg2 = fileName; // without extension
 
         // create process on the heap so it survives
         QProcess *p = new QProcess(this);
         p->setProcessChannelMode(QProcess::MergedChannels);    // merge stdout + stderr
 
-        QObject::connect(p, &QProcess::readyReadStandardOutput, [p]() {
+       QObject::connect(p, &QProcess::readyReadStandardOutput, [p]() {
           QByteArray out = p->readAllStandardOutput();
           std::cout << out.constData();
         });
-        QObject::connect(
-            p, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-            this, [progressDialog, p](int, QProcess::ExitStatus) {
-              progressDialog->reset();
-              QMessageBox::information(nullptr, QStringLiteral("Done"), QStringLiteral("Created FBX!"));
+
+       QObject::connect(
+           p, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this,
+           [this, progressDialog, p, eids, dirPath, fileName](int, QProcess::ExitStatus) {
+              // clear exports
+              QDir dir(dirPath);
+              QStringList files =
+                  dir.entryList(QStringList() << QStringLiteral("robloxmesh_*.bin")
+                                              << QStringLiteral("robloxmesh_*.csv")
+                                              << QStringLiteral("datablock*.bin")
+                                              << QStringLiteral("referenceverts.bin"), QDir::Files);
+              for(const QString &f : files) QFile::remove(dir.filePath(f));
+
+              // call new function, passing raw pointer
+              processTexEIDs(dirPath, fileName, progressDialog.get(), eids);
+
               p->deleteLater();
             });
-        p->start(exePath, QStringList() << arg);
-        return;
+       p->start(exePath, QStringList() << arg << arg2);
+       return;
       }
 
       progressDialog->setValue(idx); //increment
@@ -5505,7 +5578,7 @@ void EventBrowser::events_contextMenu(const QPoint &pos)
         return;
       }
 
-      QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
 
       // find a safe pointer to BufferViewer
       QPointer<BufferViewer> bv;
@@ -5525,8 +5598,8 @@ void EventBrowser::events_contextMenu(const QPoint &pos)
 
       int totalEids = (int)eids.size();
 
-      GUIInvoke::call(this, [bv, exportNext, idx, exportidx, totalEids]() {
-        QString name = QStringLiteral("C:/Users/Blurro/Downloads/robloxexport/robloxmesh");
+      GUIInvoke::call(this, [bv, exportNext, idx, exportidx, totalEids, dirPath]() {
+        QString name = dirPath + QStringLiteral("robloxmesh");
 
         bv->exportDataCustom(name, exportidx, totalEids, [idx, exportNext, exportidx]() {
           //std::cout << "finished exporting mesh " << idx << "\n";

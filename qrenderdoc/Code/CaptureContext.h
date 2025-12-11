@@ -62,6 +62,11 @@ class CaptureContext : public ICaptureContext, IExtensionManager
   Q_DECLARE_TR_FUNCTIONS(CaptureContext);
 
 public:
+  static int s_ForcedPixelTextureIndex;
+  static bool g_ReadyToSaveTex;
+  static bool g_ForceSavingTex;
+  void SaveCurrentTexture(const QString &dirPath, const QString &fileName, int idx);
+
   CaptureContext(PersistantConfig &cfg);
   ~CaptureContext();
 

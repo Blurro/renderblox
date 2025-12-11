@@ -286,32 +286,6 @@ void D3D12GraphicsTest::Prepare(int argc, char **argv)
 {
   GraphicsTest::Prepare(argc, argv);
 
-  for(int i = 0; i < argc; i++)
-  {
-    if(!strcmp(argv[i], "--gpuva") || !strcmp(argv[i], "--debug-gpu"))
-    {
-      gpuva = true;
-    }
-    if(i + 1 < argc &&
-       (!strcmp(argv[i], "--d3d12") || !strcmp(argv[i], "--sdk") || !strcmp(argv[i], "--d3d12core")))
-    {
-      d3d12path = argv[i + 1];
-    }
-  }
-
-  if(d3d12path.empty())
-  {
-    d3d12path = GetExecutableName();
-    d3d12path.erase(d3d12path.find_last_of("/\\"));
-    d3d12path += "/D3D12/d3d12core.dll";
-
-    FILE *f = fopen(d3d12path.c_str(), "r");
-    if(!f)
-      d3d12path.clear();
-    else
-      fclose(f);
-  }
-
   static bool prepared = false;
 
   if(!prepared)
@@ -459,6 +433,32 @@ void D3D12GraphicsTest::Prepare(int argc, char **argv)
   opts6 = caps.opts6;
   opts7 = caps.opts7;
   opts19 = caps.opts19;
+
+  for(int i = 0; i < argc; i++)
+  {
+    if(!strcmp(argv[i], "--gpuva") || !strcmp(argv[i], "--debug-gpu"))
+    {
+      gpuva = true;
+    }
+    if(i + 1 < argc &&
+       (!strcmp(argv[i], "--d3d12") || !strcmp(argv[i], "--sdk") || !strcmp(argv[i], "--d3d12core")))
+    {
+      d3d12path = argv[i + 1];
+    }
+  }
+
+  if(d3d12path.empty())
+  {
+    d3d12path = GetExecutableName();
+    d3d12path.erase(d3d12path.find_last_of("/\\"));
+    d3d12path += "/D3D12/d3d12core.dll";
+
+    FILE *f = fopen(d3d12path.c_str(), "r");
+    if(!f)
+      d3d12path.clear();
+    else
+      fclose(f);
+  }
 
   m_Factory = factory;
 }
