@@ -14,7 +14,7 @@ This project follows after the Mario Kart Arcade GP DX exporter tool I created, 
 3. Load AvatarExporter.rbxl and press F5 to play
 4. Enter any username, once its ready to capture make sure EVERYTHING is on screen, then press F10
 5. Open capture, expand the first Scene, expand 'Id_Opaque' and right click -> Set Reference on the event containing '(6, 1)'
-6. Right click on Id_OpaqueCasters -> Export Mesh and save your new .fbx
+6. Right click on Id_OpaqueCasters -> Export FBX and save your new .fbx
 
 **Demonstration**
 
