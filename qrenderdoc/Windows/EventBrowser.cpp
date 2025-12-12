@@ -5316,6 +5316,13 @@ void EventBrowser::processTexEIDs(const QString &dirPath, const QString &fileNam
   (*exportNextTex)(0);
 
   progressDialog->reset();
+  QString full = dirPath + fileName + QStringLiteral(".fbx");
+
+  if(!QFile::exists(full))
+  {
+    QMessageBox::warning(nullptr, QStringLiteral("Error"), QStringLiteral("Failed to create fbx at:\n") + full + QStringLiteral("\nPlease contact @blurro on Discord!"));
+    return;
+  }
   QMessageBox::information(nullptr, QStringLiteral("Done"), QStringLiteral("Created FBX!\n"));
 }
 
@@ -5333,7 +5340,7 @@ void EventBrowser::events_contextMenu(const QPoint &pos)
   bool contains6vert = name.contains(QStringLiteral("DrawInd"), Qt::CaseInsensitive) &&
                        name.contains(QStringLiteral("(6, 1)"), Qt::CaseInsensitive);
 
-  QAction exportMesh(tr("Export Mesh"), this);
+  QAction exportMesh(tr("Export FBX"), this);
   exportMesh.setIcon(Icons::save());
   QAction setRef(tr("Set Reference"), this);
   setRef.setIcon(Icons::flag_green());

@@ -188,12 +188,12 @@ void hideOption(QCommandLineOption &opt)
 int main(int argc, char *argv[])
 {
   // blurro making console open for debugging
-#ifdef _WIN32
-  AllocConsole();
-  freopen("CONOUT$", "w", stdout);
-  freopen("CONOUT$", "w", stderr);
-  std::cout << "Console opened!" << std::endl;
-#endif
+//#ifdef _WIN32
+  //   AllocConsole();
+  //  freopen("CONOUT$", "w", stdout);
+  //  freopen("CONOUT$", "w", stderr);
+//  std::cout << "Console opened!" << std::endl;
+//#endif
 
   // call this as the very first thing - no-op on other platforms, but on linux it means
   // XInitThreads will be called allowing driver access to xlib on multiple threads.

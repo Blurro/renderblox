@@ -173,27 +173,16 @@ void RDStyle::polishPalette(QPalette &pal) const
   QColor base;
   QColor highlight;
   QColor tooltip;
+ 
+  window = QColor(21, 21, 21);
+  windowText = QColor(225, 225, 225);
+  base = QColor(26, 26, 26);
+  highlight = QColor(60, 55, 120);
+  tooltip = QColor(70, 70, 65);
 
-  if(m_Scheme == Light)
-  {
-    window = QColor(225, 225, 225);
-    windowText = QColor(Qt::black);
-    base = QColor(Qt::white);
-    highlight = QColor(80, 110, 160);
-    tooltip = QColor(250, 245, 200);
-  }
-  else
-  {
-    window = QColor(45, 55, 60);
-    windowText = QColor(225, 225, 225);
-    base = QColor(22, 27, 30);
-    highlight = QColor(100, 130, 200);
-    tooltip = QColor(70, 70, 65);
-  }
-
-  QColor light = window.lighter(150);
-  QColor mid = window.darker(150);
-  QColor dark = mid.darker(150);
+  QColor light = QColor(26, 11, 161);
+  QColor mid = QColor(43, 43, 43);
+  QColor dark = QColor(8, 8, 8);
 
   QColor text = windowText;
 

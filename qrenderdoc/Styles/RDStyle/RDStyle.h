@@ -90,7 +90,7 @@ public:
                    const QWidget *widget = NULL) const override;
 
 protected:
-  ColorScheme m_Scheme = Light;
+  ColorScheme m_Scheme = Dark;
 
   QBitmap m_PartialCheckPattern;
 
