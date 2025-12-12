@@ -15,3 +15,7 @@ This project follows after the Mario Kart Arcade GP DX exporter tool I created, 
 4. Enter any username, once its ready to capture make sure EVERYTHING is on screen, then press F10
 5. Open capture, expand the first Scene, expand 'Id_Opaque' and right click -> Set Reference on the event containing '(6, 1)'
 6. Right click on Id_OpaqueCasters -> Export Mesh and save your new .fbx
+
+**Demonstration**
+
+https://github.com/user-attachments/assets/e82c1b6e-51a5-4b9b-9375-b861174159de
