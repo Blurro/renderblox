@@ -9,13 +9,16 @@ This project follows after the Mario Kart Arcade GP DX exporter tool I created, 
 
 ## Usage
 
-1. Open qrenderdoc.exe
+1. Open RenderBlox.exe
 2. From the program, launch Roblox Studio
 3. Load AvatarExporter.rbxl and press F5 to play
-4. Enter any username, once its ready to capture make sure EVERYTHING is on screen, then press F10
-5. Open capture, expand the first Scene, expand 'Id_Opaque' and right click -> Set Reference on the event containing '(6, 1)'
-6. Right click on Id_OpaqueCasters -> Export FBX and save your new .fbx
+4. Enter any username, or convert all imported models
+5. Choose a location and let it run!
 
 **Demonstration**
 
 https://github.com/user-attachments/assets/e82c1b6e-51a5-4b9b-9375-b861174159de
+
+## Credits
+
+- **Thanks to [BlueManDan](https://github.com/Bluemandan)** and **[BlueMond](https://github.com/Bluemond)** for beta testing, suggesting features, and helping with general Roblox/Roblox Studio knowledge
