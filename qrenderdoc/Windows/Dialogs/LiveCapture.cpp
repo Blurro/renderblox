@@ -41,6 +41,11 @@
 #include "Windows/MainWindow.h"
 #include "toolwindowmanager/ToolWindowManager.h"
 #include "ui_LiveCapture.h"
+#include "Windows/EventBrowser.h"
+
+#include <sys/stat.h>
+#include <windows.h>
+#include <iostream>:
 
 static const int PIDRole = Qt::UserRole + 1;
 static const int IdentRole = Qt::UserRole + 2;
@@ -92,6 +97,8 @@ LiveCapture::LiveCapture(ICaptureContext &ctx, const QString &hostname, const QS
       m_Main(main)
 {
   ui->setupUi(this);
+  
+  ui->toolsGroup->setVisible(false);    //----------------- remove tab that users could mess with - blurro
 
   m_Disconnect.release();
 
@@ -284,6 +291,13 @@ void LiveCapture::on_queueCap_clicked()
   m_QueueCapture.release();
 }
 
+void LiveCapture::TriggerCaptureFromExternal()
+{
+  m_CaptureNumFrames = (int)ui->numFrames->value();
+  m_TriggerCapture.release();
+  std::cout << "Triggered capture!" << std::endl;
+}
+
 void LiveCapture::on_triggerImmediateCapture_clicked()
 {
   m_CaptureNumFrames = (int)ui->numFrames->value();
@@ -392,11 +406,7 @@ void LiveCapture::saveCapture_triggered()
 
 void LiveCapture::deleteCapture_triggered()
 {
-  bool allow = checkAllowDelete();
-
-  if(!allow)
-    return;
-
+    // removed checkallowdelete
   QList<QListWidgetItem *> sel = ui->captures->selectedItems();
 
   for(QListWidgetItem *item : sel)
@@ -708,7 +718,7 @@ bool LiveCapture::checkAllowClose(int totalUnsavedCaptures, bool &noToAll)
 {
   m_IgnoreThreadClosed = true;
 
-  bool suppressRemoteWarning = false;
+  bool suppressRemoteWarning = true;
 
   QMessageBox::StandardButtons msgFlags = RDDialog::YesNoCancel;
 
@@ -1135,6 +1145,8 @@ void LiveCapture::captureCopied(uint32_t ID, const QString &localPath)
   }
 }
 
+// ---------------- open immediatelyyy edit -blurro
+uint32_t m_LastAutoOpenedCapture = -1;
 void LiveCapture::captureAdded(const QString &name, const NewCaptureData &newCapture)
 {
   Capture *cap = new Capture();
@@ -1172,6 +1184,27 @@ void LiveCapture::captureAdded(const QString &name, const NewCaptureData &newCap
   AddCapture(item, cap);
 
   ui->captures->addItem(item);
+
+  // -------- auto-open newest capture, delete previous
+  static QListWidgetItem *prevItem = nullptr;
+
+  if(cap->remoteID != m_LastAutoOpenedCapture)
+  {
+    m_LastAutoOpenedCapture = cap->remoteID;
+
+    // delete previous capture if it exists
+    if(prevItem)
+    {
+      ui->captures->clearSelection();
+      prevItem->setSelected(true);
+      deleteCapture_triggered();
+    }
+
+    ui->captures->setCurrentItem(item);
+    openCapture(cap);
+
+    prevItem = item;
+  }
 }
 
 void LiveCapture::connectionClosed()

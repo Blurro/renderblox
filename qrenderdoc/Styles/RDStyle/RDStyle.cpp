@@ -174,6 +174,7 @@ void RDStyle::polishPalette(QPalette &pal) const
   QColor highlight;
   QColor tooltip;
  
+  // ---------------- coool new colors
   window = QColor(21, 21, 21);
   windowText = QColor(225, 225, 225);
   base = QColor(26, 26, 26);

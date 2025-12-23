@@ -27,6 +27,23 @@
 #include <QFrame>
 #include "Code/Interface/QRDInterface.h"
 #include "Code/QRDUtils.h"
+#include <QLabel>
+#include <QWidget>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QStackedLayout>
+#include <QResizeEvent>
+#include <QPixmap>
+#include <QFont>
+#include <QString>
+#include <QSize>
+#include <QSizePolicy>
+#include <QEvent>
+#include <QStyle>
+#include <QStyleOption>
+#include <QApplication>
+#include <QPalette>
+#include <QDebug>
 
 namespace Ui
 {
@@ -73,12 +90,58 @@ private:
   SortType m_Sort = SortType::Alphabetical;
 };
 
+class OverlayImageLabel : public QLabel
+{
+public:
+  explicit OverlayImageLabel(QWidget *parent = nullptr) : QLabel(parent)
+  {
+    setAlignment(Qt::AlignTop | Qt::AlignRight);
+  }
+
+  void setSourcePixmap(const QPixmap &p)
+  {
+    src = p;
+    updatePixmap();
+  }
+
+  void updatePixmap()
+  {
+    if(src.isNull() || !parentWidget())
+      return;
+
+    // calculate max available size with margin
+    const int margin = 10;
+    QSize maxAllowed = parentWidget()->size() - QSize(margin * 2, margin * 2);
+
+    // clamp to maximum of 500x500
+    maxAllowed = maxAllowed.boundedTo(QSize(500, 500));
+
+    // scale pixmap to fit available space while keeping aspect ratio
+    QPixmap scaled = src.scaled(maxAllowed, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    setPixmap(scaled);
+
+    // move to top-right with margin
+    move(parentWidget()->width() - scaled.width() - margin, margin);
+    resize(scaled.size());
+  }
+
+protected:
+  void resizeEvent(QResizeEvent *e) override
+  {
+    QLabel::resizeEvent(e);
+    updatePixmap();
+  }
+
+private:
+  QPixmap src;
+};
+
 class ResourceInspector : public QFrame, public IResourceInspector, public ICaptureViewer
 {
   Q_OBJECT
 
 public:
-  explicit ResourceInspector(ICaptureContext &ctx, QWidget *parent = 0);
+  explicit ResourceInspector(ICaptureContext &ctx, QWidget *parent = nullptr);
   ~ResourceInspector();
 
   // IResourceInspector
@@ -109,10 +172,14 @@ private slots:
   void on_resourceUsage_doubleClicked(const QModelIndex &index);
 
 protected:
+  void resizeEvent(QResizeEvent *e) override;
   void enterEvent(QEvent *event) override;
   void showEvent(QShowEvent *event) override;
 
 private:
+  OverlayImageLabel *image = nullptr;
+  QFrame *bg = nullptr;
+
   void HighlightUsage();
   void SetResourceNameDisplay(const QString &name);
 

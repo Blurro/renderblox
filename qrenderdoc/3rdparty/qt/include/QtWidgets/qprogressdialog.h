@@ -127,6 +127,61 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_disconnectOnClose())
 };
 
+// ------------- new blurro stuff
+class NoCloseProgressDialog : public QProgressDialog
+{
+public:
+  explicit NoCloseProgressDialog(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags())
+      : QProgressDialog(parent, flags), m_cancelButton(nullptr)
+  {
+  }
+
+  void setCancelButton(QPushButton *btn)
+  {
+    QProgressDialog::setCancelButton(btn);
+    m_cancelButton = btn;
+  }
+
+  QPushButton *cancelButton() const { return m_cancelButton; }
+
+protected:
+  void closeEvent(QCloseEvent *e) override { e->ignore(); }
+
+  void keyPressEvent(QKeyEvent *e) override
+  {
+    if(e->key() == Qt::Key_Escape)
+    {
+      e->ignore();
+      return;
+    }
+    QProgressDialog::keyPressEvent(e);
+  }
+
+private:
+  QPushButton *m_cancelButton;
+};
+
+class EscKiller : public QObject
+{
+public:
+  explicit EscKiller(QObject *target, QObject *parent) : QObject(parent), target(target) {}
+
+protected:
+  bool eventFilter(QObject *obj, QEvent *e) override
+  {
+    if(obj == target && e->type() == QEvent::KeyPress)
+    {
+      auto *k = static_cast<QKeyEvent *>(e);
+      if(k->key() == Qt::Key_Escape)
+        return true;
+    }
+    return QObject::eventFilter(obj, e);
+  }
+
+private:
+  QObject *target;
+};
+
 QT_END_NAMESPACE
 
 #endif // QPROGRESSDIALOG_H

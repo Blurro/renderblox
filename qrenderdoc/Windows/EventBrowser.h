@@ -29,6 +29,11 @@
 #include <QLabel>
 #include <QSet>
 #include "Code/Interface/QRDInterface.h"
+#include <QTcpSocket>
+#include <memory>
+#include <QProgressDialog>
+
+class LiveCapture;
 
 namespace Ui
 {
@@ -111,6 +116,12 @@ protected:
   void resizeEvent(QResizeEvent *);
 };
 
+class LiveCapture;
+extern bool exportInProgress;
+extern bool waitToPause;
+extern bool lastExportFailed;
+extern std::shared_ptr<NoCloseProgressDialog> progressDialog;
+
 class EventBrowser : public QFrame, public IEventBrowser, public ICaptureViewer
 {
 private:
@@ -121,10 +132,26 @@ private:
 public:
   int referenceEID = -1;
 
+  void TriggerCaptureFromExternal(int captureTotal, int captureNow, int captureMeshCount, QTcpSocket *socket);
+  void cleanExport(const QString &dirPath);
+  void cleanExportPNG(const QString &dirPath, const QString &fileName);
+  void ExportOpaqueFromIndex(const QModelIndex &index);
+  void ShowExportFinishedDialog();
+  QTcpSocket *m_PendingCaptureSocket = nullptr;
+  bool m_PendingOpaqueExport = false;
+  int exportModelCount = 1;
+  int exportModelCurrent = 1;
+  int exportModelMeshes = 1;
+  bool lastBeforePauseExport = false;
+  QString FolderExportPath;
+  QString PopUpMessage;
+
   explicit EventBrowser(ICaptureContext &ctx, QWidget *parent = 0);
   ~EventBrowser();
 
-  void EventBrowser::processTexEIDs(const QString &dirPath, const QString &fileName, QProgressDialog *progressDialog, const std::vector<uint32_t> &eids);
+  LiveCapture *liveCaptureInstance = nullptr;
+
+  void EventBrowser::processTexEIDs(const QString &dirPath, const std::vector<uint32_t> &eids);
 
   // IEventBrowser
   QWidget *Widget() override { return this; }

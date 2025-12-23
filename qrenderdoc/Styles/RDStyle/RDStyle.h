@@ -30,6 +30,21 @@
 #include <QProxyStyle>
 #include "Styles/RDTweakedNativeStyle/RDTweakedNativeStyle.h"
 
+#include <QWidget>
+#include <QTimer>
+#include <QPalette>
+
+class MyWidget : public QWidget    // or whatever your class is
+{
+  Q_OBJECT
+
+public:
+  MyWidget(QWidget *parent = nullptr);
+
+private:
+  QTimer *m_colorTimer;    // member pointer, will own the timer
+};
+
 class RDProgressAnimation : public QAbstractAnimation
 {
 private:

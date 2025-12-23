@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
  * The MIT License (MIT)
  *
  * Copyright (c) 2019-2025 Baldur Karlsson
@@ -50,8 +50,8 @@
 #include <algorithm>    // for std::min
 #include <cstdint>      // for uint32_t
 #include <iostream>     // for std::cout
-
-#include <iostream>
+#include <QSharedPointer>
+#include <QProgressDialog>
 
 #include <atomic>
 std::atomic<int> g_exportDone(-1);
@@ -464,26 +464,12 @@ private:
 
 struct BufferData
 {
-  BufferData()
-  {
-    refcount.store(1);
-    stride = 0;
-  }
-
-  void ref() { refcount.ref(); }
-  void deref()
-  {
-    bool alive = refcount.deref();
-
-    if(!alive)
-      delete this;
-  }
+  BufferData() : stride(0) {}
 
   size_t stride;
   bytebuf storage;
-  QAtomicInteger<uint32_t> refcount;
 
-  const byte *data() const { return storage.begin(); };
+  const byte *data() const { return storage.begin(); }
   const byte *end() const { return storage.end(); }
   bool hasData() const { return !storage.empty(); }
   size_t size() const { return storage.size(); }
@@ -520,9 +506,10 @@ struct BufferConfiguration
   // we can have two index buffers for VSOut data:
   // the original index buffer is used for the displayed value (in displayIndices), and the actual
   // potentially remapped or permuated index buffer used for fetching data (in indices).
-  BufferData *displayIndices = NULL;
   int32_t displayBaseVertex = 0;
-  BufferData *indices = NULL;
+  QSharedPointer<BufferData> displayIndices;
+  QSharedPointer<BufferData> indices;
+  QList<QSharedPointer<BufferData>> buffers;
   int32_t baseVertex = 0;
 
   rdcfixedarray<uint32_t, 3> dispatchSize;
@@ -538,7 +525,6 @@ struct BufferConfiguration
 
   QVector<PixelValue> generics;
   QVector<bool> genericsEnabled;
-  QList<BufferData *> buffers;
   uint32_t primRestart = 0;
 
   BufferConfiguration() = default;
@@ -546,6 +532,9 @@ struct BufferConfiguration
   ~BufferConfiguration() { reset(); }
   BufferConfiguration &operator=(const BufferConfiguration &o)
   {
+    if(this == &o)
+      return *this;
+
     reset();
 
     curInstance = o.curInstance;
@@ -565,14 +554,9 @@ struct BufferConfiguration
     noInstances = o.noInstances;
 
     displayIndices = o.displayIndices;
-    if(displayIndices)
-      displayIndices->ref();
     displayBaseVertex = o.displayBaseVertex;
 
     indices = o.indices;
-    if(indices)
-      indices->ref();
-
     baseVertex = o.baseVertex;
     meshletVertexPrefixCounts = o.meshletVertexPrefixCounts;
     dispatchSize = o.dispatchSize;
@@ -588,38 +572,30 @@ struct BufferConfiguration
     genericsEnabled = o.genericsEnabled;
     primRestart = o.primRestart;
 
+    // copy buffers safely with QSharedPointer
     buffers = o.buffers;
-    for(BufferData *b : buffers)
-      b->ref();
 
     return *this;
   }
 
   void reset()
   {
-    if(indices)
-      indices->deref();
-    indices = NULL;
+    indices = nullptr;
+    displayIndices = nullptr;
 
-    if(displayIndices)
-      displayIndices->deref();
-    displayIndices = NULL;
-
-    for(BufferData *b : buffers)
-      b->deref();
+    buffers.clear();
 
     meshletVertexPrefixCounts.clear();
     dispatchSize = {};
     taskSizes.clear();
 
-    buffers.clear();
     columns.clear();
     props.clear();
     generics.clear();
     genericsEnabled.clear();
+
     numRows = 0;
     unclampedNumRows = 0;
-
     statusString.clear();
 
     noVertices = false;
@@ -1220,8 +1196,7 @@ public:
 
           if(config.indices && config.indices->hasData())
           {
-            idx = CalcIndex(config.indices, row, config.baseVertex, config.primRestart);
-
+            idx = CalcIndex(config.indices.data(), row, config.baseVertex, config.primRestart);
             if(config.primRestart && idx == config.primRestart)
               return col == 1 ? lit("--") : lit(" Restart");
 
@@ -1233,8 +1208,7 @@ public:
           {
             // if we have separate displayIndices, fetch that for display instead
             if(config.displayIndices && config.displayIndices->hasData())
-              idx = CalcIndex(config.displayIndices, row, config.displayBaseVertex,
-                              config.primRestart);
+              idx = CalcIndex(config.displayIndices.data(), row, config.displayBaseVertex, config.primRestart);
 
             if(idx == ~0U)
               return outOfBounds();
@@ -1572,7 +1546,7 @@ struct CalcBoundingBoxData
 
 void CacheDataForIteration(QVector<CachedElData> &cache, const rdcarray<ShaderConstant> &columns,
                            const rdcarray<BufferElementProperties> &props,
-                           const QList<BufferData *> buffers, uint32_t inst)
+                           const QList<QSharedPointer<BufferData>> &buffers, uint32_t inst)
 {
   cache.reserve(columns.count());
 
@@ -1943,42 +1917,31 @@ static void RT_FetchMeshPipeData(IReplayController *r, ICaptureContext &ctx, Pop
 {
   uint32_t numIndices = data->postOut2.numIndices;
 
-  if(data->inConfig.indices)
-    data->inConfig.indices->deref();
-
-  data->inConfig.indices = NULL;
+  data->inConfig.indices.reset();
 
   data->out1Config.numRows = data->postOut1.numIndices;
   data->out1Config.unclampedNumRows = 0;
 
-  if(data->out1Config.indices)
-    data->out1Config.indices->deref();
-  if(data->out1Config.displayIndices)
-    data->out1Config.displayIndices->deref();
-  data->out1Config.displayIndices = NULL;
+  data->out1Config.indices.reset();
+  data->out1Config.displayIndices.reset();
 
   data->out1Config.dispatchSize = data->postOut1.dispatchSize;
   data->out1Config.taskSizes = data->postOut1.taskSizes;
 
   if(data->postOut1.vertexResourceId != ResourceId())
   {
-    BufferData *postts = new BufferData;
+    auto postts = QSharedPointer<BufferData>::create();
     postts->storage =
         r->GetBufferData(data->postOut1.vertexResourceId, data->postOut1.vertexByteOffset, 0);
-
     postts->stride = data->postOut1.vertexByteStride;
 
-    // ref passes to model
     data->out1Config.buffers.push_back(postts);
   }
 
   data->out1Config.statusString = data->postOut1.status;
 
-  if(data->out2Config.indices)
-    data->out2Config.indices->deref();
-  if(data->out2Config.displayIndices)
-    data->out2Config.displayIndices->deref();
-  data->out2Config.displayIndices = NULL;
+  data->out2Config.indices.reset();
+  data->out2Config.displayIndices.reset();
 
   uint32_t count = 0;
   for(const MeshletSize &meshletSize : data->postOut2.meshletSizes)
@@ -1997,27 +1960,25 @@ static void RT_FetchMeshPipeData(IReplayController *r, ICaptureContext &ctx, Pop
   bytebuf idata = r->GetBufferData(data->postOut2.indexResourceId, data->postOut2.indexByteOffset,
                                    numIndices * data->postOut2.indexByteStride);
 
-  data->out2Config.indices = new BufferData();
-  data->out2Config.indices->storage.resize(sizeof(uint32_t) * numIndices);
-  uint32_t *indices = (uint32_t *)data->out2Config.indices->data();
-
+  auto out2indices = QSharedPointer<BufferData>::create();
+  out2indices->storage.resize(sizeof(uint32_t) * numIndices);
+  out2indices->stride = sizeof(uint32_t);
+  uint32_t *indices = (uint32_t *)out2indices->data();
   memcpy(indices, idata.data(), qMin(idata.size(), numIndices * sizeof(uint32_t)));
+  data->out2Config.indices = out2indices;
 
   if(data->postOut2.vertexResourceId != ResourceId())
   {
-    BufferData *postms = new BufferData;
+    auto postms = QSharedPointer<BufferData>::create();
     postms->storage =
         r->GetBufferData(data->postOut2.vertexResourceId, data->postOut2.vertexByteOffset, 0);
-
     postms->stride = data->postOut2.vertexByteStride;
 
-    // ref passes to model
     data->out2Config.buffers.push_back(postms);
   }
 
   data->out2Config.perPrimitiveOffset = data->postOut2.perPrimitiveOffset;
   data->out2Config.perPrimitiveStride = data->postOut2.perPrimitiveStride;
-
   data->out2Config.statusString = data->postOut2.status;
 }
 
@@ -2025,9 +1986,7 @@ static void RT_FetchVertexPipeData(IReplayController *r, ICaptureContext &ctx,
                                    PopulateBufferData *data)
 {
   const ActionDescription *action = ctx.CurAction();
-
   BoundVBuffer ib = ctx.CurPipelineState().GetIBuffer();
-
   rdcarray<BoundVBuffer> vbs = ctx.CurPipelineState().GetVBuffers();
 
   uint32_t numIndices = action ? action->numIndices : 0;
@@ -2037,33 +1996,35 @@ static void RT_FetchVertexPipeData(IReplayController *r, ICaptureContext &ctx,
   {
     uint64_t readBytes = numIndices * ib.byteStride;
     uint32_t offset = action->indexOffset * ib.byteStride;
-
     if(ib.byteSize > offset)
       readBytes = qMin(ib.byteSize - offset, readBytes);
     else
       readBytes = 0;
-
     if(readBytes > 0)
       idata = r->GetBufferData(ib.resourceId, ib.byteOffset + offset, readBytes);
   }
 
-  if(data->inConfig.indices)
-    data->inConfig.indices->deref();
+  // reset QSharedPointers
+  data->inConfig.indices.reset();
+  data->inConfig.displayIndices.reset();
+  data->inConfig.buffers.clear();
 
-  data->inConfig.indices = new BufferData();
-
+  // allocate new inConfig.indices if needed
   if(action && ib.byteStride != 0 && !idata.isEmpty())
+  {
+    data->inConfig.indices = QSharedPointer<BufferData>::create();
     data->inConfig.indices->storage.resize(
         sizeof(uint32_t) *
         qMin(numIndices, (((uint32_t)idata.size() + ib.byteStride - 1) / ib.byteStride)));
+  }
   else if(action && (action->flags & ActionFlags::Indexed))
+  {
+    data->inConfig.indices = QSharedPointer<BufferData>::create();
     data->inConfig.indices->storage.resize(sizeof(uint32_t));
+  }
 
-  uint32_t *indices = (uint32_t *)data->inConfig.indices->data();
-
-  uint32_t maxIndex = 0;
-  if(action)
-    maxIndex = qMax(1U, numIndices) - 1;
+  uint32_t *indices = data->inConfig.indices ? (uint32_t *)data->inConfig.indices->data() : nullptr;
+  uint32_t maxIndex = action ? qMax(1U, numIndices) - 1 : 0;
 
   if(action && !idata.isEmpty())
   {
@@ -2071,66 +2032,55 @@ static void RT_FetchVertexPipeData(IReplayController *r, ICaptureContext &ctx,
     if(ib.byteStride == 1)
     {
       uint8_t primRestart = data->inConfig.primRestart & 0xff;
-
       for(size_t i = 0; i < idata.size() && (uint32_t)i < numIndices; i++)
       {
         indices[i] = (uint32_t)idata[i];
         if(primRestart && indices[i] == primRestart)
           continue;
-
         maxIndex = qMax(maxIndex, indices[i]);
       }
     }
     else if(ib.byteStride == 2)
     {
       uint16_t primRestart = data->inConfig.primRestart & 0xffff;
-
       uint16_t *src = (uint16_t *)idata.data();
       for(size_t i = 0; i < idata.size() / sizeof(uint16_t) && (uint32_t)i < numIndices; i++)
       {
         indices[i] = (uint32_t)src[i];
         if(primRestart && indices[i] == primRestart)
           continue;
-
         maxIndex = qMax(maxIndex, indices[i]);
       }
     }
     else if(ib.byteStride == 4)
     {
-      uint32_t primRestart = data->inConfig.primRestart;
-
       memcpy(indices, idata.data(), qMin(idata.size(), numIndices * sizeof(uint32_t)));
-
+      uint32_t primRestart = data->inConfig.primRestart;
       for(uint32_t i = 0; i < idata.size() / sizeof(uint32_t) && i < numIndices; i++)
       {
         if(primRestart && indices[i] == primRestart)
           continue;
-
         maxIndex = qMax(maxIndex, indices[i]);
       }
     }
   }
 
+  // handle vertex buffers
   int vbIdx = 0;
   for(BoundVBuffer vb : vbs)
   {
     bool used = false;
-    bool pi = false;
-    bool pv = false;
-
+    bool pi = false, pv = false;
     uint32_t maxAttrOffset = 0;
 
     for(int c = 0; c < data->inConfig.columns.count(); c++)
     {
       const ShaderConstant &col = data->inConfig.columns[c];
       const BufferElementProperties &prop = data->inConfig.props[c];
-
       if(prop.buffer == vbIdx)
       {
         used = true;
-
         maxAttrOffset = qMax(maxAttrOffset, col.byteOffset);
-
         if(prop.perinstance)
           pi = true;
         else
@@ -2139,10 +2089,7 @@ static void RT_FetchVertexPipeData(IReplayController *r, ICaptureContext &ctx,
     }
 
     vbIdx++;
-
-    uint32_t maxIdx = 0;
-    uint32_t offset = 0;
-
+    uint32_t maxIdx = 0, offset = 0;
     if(used && action)
     {
       if(pi)
@@ -2154,130 +2101,94 @@ static void RT_FetchVertexPipeData(IReplayController *r, ICaptureContext &ctx,
       {
         maxIdx = qMax(maxIndex, maxIdx);
         offset = action->vertexOffset;
-
         if(action->baseVertex > 0)
           maxIdx = qMax(maxIdx, maxIdx + (uint32_t)action->baseVertex);
       }
-
       if(pi && pv)
         qCritical() << "Buffer used for both instance and vertex rendering!";
     }
 
-    BufferData *buf = new BufferData;
+    QSharedPointer<BufferData> buf = QSharedPointer<BufferData>::create();
     if(used)
     {
       uint64_t readBytes = qMax(maxIdx, maxIdx + 1) * vb.byteStride + maxAttrOffset;
-
-      // if the stride is 0, allow reading at most one float4. This will still get clamped by the
-      // declared vertex buffer size below
       if(vb.byteStride == 0)
         readBytes += 16;
-
       offset *= vb.byteStride;
-
       if(vb.byteSize > offset)
         readBytes = qMin(vb.byteSize - offset, readBytes);
       else
         readBytes = 0;
-
       if(readBytes > 0)
         buf->storage = r->GetBufferData(vb.resourceId, vb.byteOffset + offset, readBytes);
-
       buf->stride = vb.byteStride;
     }
-    // ref passes to model
     data->inConfig.buffers.push_back(buf);
   }
 
-  if(data->postOut1.numIndices <= data->inConfig.numRows)
-  {
-    data->out1Config.numRows = data->postOut1.numIndices;
-    data->out1Config.unclampedNumRows = 0;
-  }
-  else
-  {
-    // the vertex shader can't run any expansion, so apply the same clamping to it as we applied to
-    // the inputs. This protects against draws with an invalid number of vertices.
-    data->out1Config.numRows = data->inConfig.numRows;
-    data->out1Config.unclampedNumRows = data->inConfig.unclampedNumRows;
-  }
-
+  // out1Config
+  data->out1Config.numRows = qMin(data->postOut1.numIndices, data->inConfig.numRows);
+  data->out1Config.unclampedNumRows =
+      qMin(data->postOut1.numIndices, data->inConfig.unclampedNumRows);
   data->out1Config.statusString = data->postOut1.status;
-
   data->out1Config.baseVertex = data->postOut1.baseVertex;
   data->out1Config.displayBaseVertex = data->inConfig.baseVertex;
 
   if(action && data->postOut1.indexResourceId != ResourceId() &&
      (action->flags & ActionFlags::Indexed))
+  {
     idata = r->GetBufferData(data->postOut1.indexResourceId, data->postOut1.indexByteOffset,
                              numIndices * data->postOut1.indexByteStride);
+  }
 
-  indices = NULL;
-  if(data->out1Config.indices)
-    data->out1Config.indices->deref();
-  if(data->out1Config.displayIndices)
-    data->out1Config.displayIndices->deref();
+  data->out1Config.indices.reset();
+  data->out1Config.displayIndices = data->inConfig.indices;    // shared pointer copy
+  data->out1Config.indices = QSharedPointer<BufferData>::create();
 
+  if(action && ib.byteStride != 0 && !idata.isEmpty())
   {
-    // display the same index values
-    data->out1Config.displayIndices = data->inConfig.indices;
-    data->out1Config.displayIndices->ref();
-
-    data->out1Config.indices = new BufferData();
-    if(action && ib.byteStride != 0 && !idata.isEmpty())
+    data->out1Config.indices->storage.resize(sizeof(uint32_t) * numIndices);
+    indices = (uint32_t *)data->out1Config.indices->data();
+    if(ib.byteStride == 1)
     {
-      data->out1Config.indices->storage.resize(sizeof(uint32_t) * numIndices);
-      indices = (uint32_t *)data->out1Config.indices->data();
-
-      if(ib.byteStride == 1)
-      {
-        for(size_t i = 0; i < idata.size() && (uint32_t)i < numIndices; i++)
-          indices[i] = (uint32_t)idata[i];
-      }
-      else if(ib.byteStride == 2)
-      {
-        uint16_t *src = (uint16_t *)idata.data();
-        for(size_t i = 0; i < idata.size() / sizeof(uint16_t) && (uint32_t)i < numIndices; i++)
-          indices[i] = (uint32_t)src[i];
-      }
-      else if(ib.byteStride == 4)
-      {
-        memcpy(indices, idata.data(), qMin(idata.size(), numIndices * sizeof(uint32_t)));
-      }
+      for(size_t i = 0; i < idata.size() && (uint32_t)i < numIndices; i++)
+        indices[i] = (uint32_t)idata[i];
+    }
+    else if(ib.byteStride == 2)
+    {
+      uint16_t *src = (uint16_t *)idata.data();
+      for(size_t i = 0; i < idata.size() / sizeof(uint16_t) && (uint32_t)i < numIndices; i++)
+        indices[i] = (uint32_t)src[i];
+    }
+    else if(ib.byteStride == 4)
+    {
+      memcpy(indices, idata.data(), qMin(idata.size(), numIndices * sizeof(uint32_t)));
     }
   }
 
   if(data->postOut1.vertexResourceId != ResourceId())
   {
-    BufferData *postvs = new BufferData;
+    QSharedPointer<BufferData> postvs = QSharedPointer<BufferData>::create();
     postvs->storage =
         r->GetBufferData(data->postOut1.vertexResourceId, data->postOut1.vertexByteOffset, 0);
-
     postvs->stride = data->postOut1.vertexByteStride;
-
-    // ref passes to model
     data->out1Config.buffers.push_back(postvs);
   }
 
+  // out2Config
   data->out2Config.statusString = data->postOut2.status;
-
   data->out2Config.numRows = data->postOut2.numIndices;
   data->out2Config.unclampedNumRows = 0;
   data->out2Config.baseVertex = data->postOut2.baseVertex;
   data->out2Config.displayBaseVertex = data->inConfig.baseVertex;
-
-  indices = NULL;
-  data->out2Config.indices = NULL;
+  data->out2Config.indices.reset();
 
   if(data->postOut2.vertexResourceId != ResourceId())
   {
-    BufferData *postgs = new BufferData;
+    QSharedPointer<BufferData> postgs = QSharedPointer<BufferData>::create();
     postgs->storage =
         r->GetBufferData(data->postOut2.vertexResourceId, data->postOut2.vertexByteOffset, 0);
-
     postgs->stride = data->postOut2.vertexByteStride;
-
-    // ref passes to model
     data->out2Config.buffers.push_back(postgs);
   }
 }
@@ -3616,8 +3527,7 @@ void BufferViewer::OnEventChanged(uint32_t eventId)
     }
     else
     {
-      buf = new BufferData;
-
+      QSharedPointer<BufferData> buf = QSharedPointer<BufferData>::create();
       // calculate tight stride
       buf->stride = std::max(1U, bufdata->inConfig.repeatStride);
 
@@ -3700,12 +3610,6 @@ void BufferViewer::OnEventChanged(uint32_t eventId)
 
       // ownership passes to model
       bufdata->inConfig.buffers.push_back(buf);
-
-      if(!me)
-      {
-        delete buf;
-        return;
-      }
     }
 
     // for cbuffers, if the format is empty or if we're not buffer-backed and don't have inline
@@ -3862,7 +3766,8 @@ void BufferViewer::OnEventChanged(uint32_t eventId)
                 if(n && !bufdata->out1Config.columns.empty())
                 {
                   UI_AddTaskPayloads(n, i * bufdata->out1Config.buffers[0]->stride,
-                                     bufdata->out1Config.columns, bufdata->out1Config.buffers[0]);
+                                     bufdata->out1Config.columns,
+                                     bufdata->out1Config.buffers[0].data());
                 }
 
                 i++;
@@ -4424,8 +4329,7 @@ void BufferViewer::calcBoundingData(CalcBoundingBoxData &bbox)
 
       if(s.indices && s.indices->hasData())
       {
-        idx = CalcIndex(s.indices, row, s.baseVertex, s.primRestart);
-
+        idx = CalcIndex(s.indices.data(), row, s.baseVertex, s.primRestart);
         if(idx == ~0U || (s.primRestart && idx == s.primRestart))
           continue;
       }
@@ -5725,9 +5629,6 @@ void BufferViewer::ClearModels()
 
 void BufferViewer::CalcColumnWidth(int maxNumRows)
 {
-  // while the calculated column widths aren't actually isn't quite based on maxNumRows, it can only
-  // be affected by a style change so that is good enough for us to cache it and save time
-  // recalculating this repeatedly.
   if(m_ColumnWidthRowCount == maxNumRows)
     return;
 
@@ -5787,13 +5688,10 @@ void BufferViewer::CalcColumnWidth(int maxNumRows)
   bufconfig.unclampedNumRows = 0;
   bufconfig.baseVertex = 0;
 
-  if(bufconfig.indices)
-    bufconfig.indices->deref();
-
-  bufconfig.indices = new BufferData;
+  // allocate QSharedPointer instead of raw pointer
+  bufconfig.indices = QSharedPointer<BufferData>::create();
   bufconfig.indices->stride = sizeof(uint32_t);
   bufconfig.indices->storage.resize(sizeof(uint32_t) * 2);
-
   uint32_t *indices = (uint32_t *)bufconfig.indices->data();
   indices[0] = 0;
   indices[1] = 1000000;
@@ -5806,23 +5704,22 @@ void BufferViewer::CalcColumnWidth(int maxNumRows)
     uint32_t ui[3];
   };
 
-  BufferData *bufdata = new BufferData;
+  QSharedPointer<BufferData> bufdata = QSharedPointer<BufferData>::create();
   bufdata->stride = sizeof(TestData);
   bufdata->storage.resize(sizeof(TestData));
   bufconfig.buffers.push_back(bufdata);
 
   TestData *test = (TestData *)bufdata->data();
-
   test->f[0] = 1.0f;
   test->f[1] = 1.2345e-20f;
   test->f[2] = 123456.7890123456789f;
   test->f[3] = -1.0f;
 
+  test->ui[0] = 0;    // just to be safe
   test->ui[1] = 0x12345678;
   test->ui[2] = 0xffffffff;
 
   m_ModelIn->beginReset();
-
   m_ModelIn->endReset(bufconfig);
 
   // measure this data so we can use this as column widths
@@ -5843,7 +5740,6 @@ void BufferViewer::CalcColumnWidth(int maxNumRows)
   }
 
   ui->inTable->resizeRowsToContents();
-
   m_DataRowHeight = ui->inTable->rowHeight(0);
 }
 
@@ -6347,9 +6243,19 @@ void BufferViewer::exportCSV(QTextStream &ts, const QString &prefix, RDTreeWidge
 }
 
 //------------new
-void BufferViewer::SelectSiblingAndDumpVSPositions(const QString &dirPath, const QModelIndex &, uint32_t, int instanceCount, int instanceTrack)
+void BufferViewer::SelectSiblingAndDumpVSPositions(const QString &dirPath, const QModelIndex &,
+                                                   uint32_t, int instanceCount, int instanceTrack,
+                                                   NoCloseProgressDialog *progress = nullptr)
 {
   g_exportDone = -1;
+
+  // set progress range if dialog exists
+  if(progress)
+  {
+    progress->setRange(0, instanceCount);
+    progress->setValue(0);
+  }
+
   for(int inst = 0; inst < instanceCount; ++inst)
   {
     ui->instance->setValue(inst);
@@ -6361,6 +6267,13 @@ void BufferViewer::SelectSiblingAndDumpVSPositions(const QString &dirPath, const
 
     while(g_exportDone < inst)
       QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
+
+    // update progress dialog after finishing this instance
+    if(progress)
+    {
+      progress->setValue(inst + 1);
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
+    }
   }
 }
 
@@ -6498,7 +6411,7 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
             }
           }
         }
-        else // previous doesnt appear to run just this else it seems - blurro
+        else    // previous doesnt appear to run just this else it seems - blurro
         {
           QVector<CachedElData> cache;
           CacheDataForIteration(cache, config.columns, config.props, config.buffers,
@@ -6527,7 +6440,7 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
 
             if(config.indices && config.indices->hasData())
             {
-              idx = CalcIndex(config.indices, i, config.baseVertex, config.primRestart);
+              idx = CalcIndex(config.indices.data(), i, config.baseVertex, config.primRestart);
               if(config.primRestart && idx == config.primRestart)
                 continue;
             }
@@ -6569,8 +6482,7 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
 
           if(!(h.startsWith(QStringLiteral("POSITION")) ||
                h.startsWith(QStringLiteral("SV_Position")) ||
-               h.startsWith(QStringLiteral("NORMAL")) ||
-               h.startsWith(QStringLiteral("TEXCOORD0"))))
+               h.startsWith(QStringLiteral("NORMAL")) || h.startsWith(QStringLiteral("TEXCOORD0"))))
           {
             continue;
           }
@@ -6597,7 +6509,7 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
             s << model->data(model->index(row, idxCol), Qt::DisplayRole).toString() << "\n";
           }
         }
-        else // this doesnt appear to run? lol - blurro
+        else    // this doesnt appear to run? lol - blurro
         {
           // write 64k rows at a time
           ResourceId buff = m_BufferID;
@@ -6617,11 +6529,17 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
                   bufferData.storage = controller->GetBufferData(buff, byteOffset, chunkSize);
                   bufferData.stride = config.buffers[0]->stride;
 
+                  auto sharedBuf = QSharedPointer<BufferData>::create();
+                  sharedBuf->storage = bufferData.storage;
+                  sharedBuf->stride = bufferData.stride;
+
+                  // do NOT delete bufferData – it's on the stack
+
+                  CacheDataForIteration(cache, config.columns, config.props, {sharedBuf}, 0);
+
                   size_t numRows =
                       (bufferData.storage.size() + bufferData.stride - 1) / bufferData.stride;
                   size_t rowOffset = byteOffset / bufferData.stride;
-
-                  CacheDataForIteration(cache, config.columns, config.props, {&bufferData}, 0);
 
                   // go row by row, finding the start of the row and dumping out the elements using
                   // their
@@ -6712,7 +6630,8 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
     // ---------------new, no more export dialog it takes far longer with it enabled
     while(exportThread->isRunning())
       QCoreApplication::processEvents();
-    //ShowProgressDialog(this, tr("Exporting data (%1/%2)").arg(*exportIdxPtr + 1).arg(totalEids), [exportThread]() { return !exportThread->isRunning(); });
+    // ShowProgressDialog(this, tr("Exporting data (%1/%2)").arg(*exportIdxPtr + 1).arg(totalEids),
+    // [exportThread]() { return !exportThread->isRunning(); });
 
     exportThread->deleteLater();
   }
@@ -6771,10 +6690,11 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
 
       if(l1Missing || l1Blank || l2Missing || l2Blank)
       {
-        //std::cout << "retrying csv export due to empty csv written\n";
-        QTimer::singleShot(0, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
-          exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
-        });
+        // std::cout << "retrying csv export due to empty csv written\n";
+        QTimer::singleShot(
+            0, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
+              exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
+            });
         return;
       }
     }
@@ -6786,10 +6706,11 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
     QFile fb(binFile);
     if(fb.size() < 4)
     {
-      //std::cout << "retrying bin export due to empty bin written\n";
-      QTimer::singleShot(0, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
-        exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
-      });
+      // std::cout << "retrying bin export due to empty bin written\n";
+      QTimer::singleShot(
+          0, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
+            exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
+          });
       return;
     }
     // check for all-zero file (first 1024 bytes) man im really fighting renderdoc with ts idk a better way lol
@@ -6809,7 +6730,8 @@ void BufferViewer::exportData(const BufferExport &params, const QString &forcedN
       if(allZero)
       {
         std::cout << "retrying bin export due to all-zero bin\n";
-        QTimer::singleShot(0, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
+        QTimer::singleShot(
+            0, this, [this, params, forcedName, done, exportIdxPtr, totalEids, overrideView]() {
               exportData(params, forcedName, exportIdxPtr, totalEids, done, overrideView);
             });
         return;

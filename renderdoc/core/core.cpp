@@ -404,10 +404,10 @@ RenderDoc::RenderDoc()
   m_Cap = 0;
 
   m_FocusKeys.clear();
-  m_FocusKeys.push_back(eRENDERDOC_Key_F11);
+  //m_FocusKeys.push_back(eRENDERDOC_Key_F11);
 
   m_CaptureKeys.clear();
-  m_CaptureKeys.push_back(eRENDERDOC_Key_F10);
+  //m_CaptureKeys.push_back(eRENDERDOC_Key_F10);
 
   m_ExHandler = NULL;
 
@@ -1010,8 +1010,13 @@ void RenderDoc::Tick()
     cur_focus |= Keyboard::GetKeyState(m_FocusKeys[i]);
 
   bool cur_cap = false;
-  for(size_t i = 0; i < m_CaptureKeys.size(); i++)
-    cur_cap |= Keyboard::GetKeyState(m_CaptureKeys[i]);
+  if(m_CaptureKeys.empty())
+    cur_cap = true;    // bypass key check
+  else
+  {
+    for(size_t i = 0; i < m_CaptureKeys.size(); i++)
+      cur_cap |= Keyboard::GetKeyState(m_CaptureKeys[i]);
+  }
 
   m_FrameTimer.UpdateTimers();
 
@@ -1021,7 +1026,7 @@ void RenderDoc::Tick()
   }
   if(!m_PrevCap && cur_cap)
   {
-    TriggerCapture(1);
+    TriggerCapture(0); // captures 0 frames but activates livecapture.cpp
   }
 
   m_PrevFocus = cur_focus;

@@ -57,6 +57,8 @@ public:
 
   ~LiveCapture();
 
+  void TriggerCaptureFromExternal();
+
   void QueueCapture(int frameNumber, int numFrames);
   const QString &hostname() { return m_Hostname; }
   void cleanItems();

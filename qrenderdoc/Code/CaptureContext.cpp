@@ -1596,7 +1596,7 @@ bool CaptureContext::g_ForceSavingTex = false;
 
 void CaptureContext::SaveCurrentTexture(const QString &dirPath, const QString &fileName, int idx)
 {
-  QString path = dirPath + fileName + QStringLiteral("%1.png").arg(idx);
+  QString path = dirPath + fileName + QStringLiteral("#%1.png").arg(idx);
 
   // wait until textureviewer signals ready
   QElapsedTimer readyTimer;

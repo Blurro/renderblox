@@ -147,6 +147,8 @@ CaptureDialog::CaptureDialog(ICaptureContext &ctx, OnCaptureMethod captureCallba
 {
   ui->setupUi(this);
 
+  ui->actionGroup->setVisible(false);    //----------------- remove tab that users could mess with - blurro
+  
   ui->exePath->setFont(Formatter::PreferredFont());
   ui->workDirPath->setFont(Formatter::PreferredFont());
   ui->cmdline->setFont(Formatter::PreferredFont());

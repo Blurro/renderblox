@@ -29,6 +29,7 @@
 #include <QPainterPath>
 #include <QPen>
 #include <QStyleOption>
+#include <iostream>
 
 namespace Constants
 {
@@ -229,8 +230,7 @@ void RDTweakedNativeStyle::drawComplexControl(ComplexControl control, const QSty
     labelTextIcon.rect = subControlRect(control, opt, SC_ToolButton, widget);
 
     // draw the label text/icon
-    drawControl(CE_ToolButtonLabel, &labelTextIcon, p, widget);
-
+    QProxyStyle::drawControl(CE_ToolButtonLabel, &labelTextIcon, p, widget);
     if(hasMenu)
     {
       menu.rect.adjust(2, 0, 0, 0);

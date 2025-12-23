@@ -30,6 +30,7 @@
 #include "Code/Interface/QRDInterface.h"
 #include "Code/QRDUtils.h"
 #include <QTableView>
+#include <QProgressDialog>
 
 namespace Ui
 {
@@ -86,6 +87,8 @@ struct CBufferData
   rdcstr entryPoint;
 };
 
+class NoCloseProgressDialog;
+
 class BufferViewer : public QFrame, public IBufferViewer, public ICaptureViewer
 {
   Q_OBJECT
@@ -96,8 +99,9 @@ public:
   void exportDataCustom(const QString &basePath, std::shared_ptr<int> exportIdxPtr, int totalEids,
                         std::function<void()> done);
 
-  void SelectSiblingAndDumpVSPositions(const QString &dirPath, const QModelIndex &,
-                                                     uint32_t, int instanceCount, int instanceTrack);
+  void SelectSiblingAndDumpVSPositions(const QString &dirPath, const QModelIndex &refIdx,
+                                       uint32_t referenceEID, int instanceCount, int instanceTrack,
+                                       NoCloseProgressDialog *progress);
 
   void exportData(
       const BufferExport &params, const QString &forcedName = QString(),

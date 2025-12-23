@@ -164,11 +164,17 @@ CaptureSettings::CaptureSettings(const QVariant &v)
 
 rdcstr ConfigFilePath(const rdcstr &filename)
 {
+  if(filename == "DefaultLayout.config") //--------------- force defaultlayout.config - blurro
+  {
+    QDir dir(QCoreApplication::applicationDirPath());
+    return QDir::cleanPath(dir.absoluteFilePath(QString::fromUtf8(filename.c_str())));
+  }
+
   QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 
   QDir dir(path);
   if(!dir.exists())
     dir.mkdir(lit("."));
 
-  return QDir::cleanPath(dir.absoluteFilePath(filename));
+  return QDir::cleanPath(dir.absoluteFilePath(QString::fromUtf8(filename.c_str())));
 }

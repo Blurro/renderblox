@@ -13,6 +13,17 @@
 #include <chrono>
 #include <sys/stat.h>
 #include <windows.h>
+
+std::string getExeDir()
+{
+  char path[MAX_PATH];
+  GetModuleFileNameA(nullptr, path, MAX_PATH);
+
+  std::string exePath(path);
+  size_t pos = exePath.find_last_of("\\/");
+  return (pos == std::string::npos) ? std::string() : exePath.substr(0, pos + 1);
+}
+
 using namespace std;
 using Eigen::Vector2d;
 using Eigen::Vector3d;
@@ -22,6 +33,9 @@ using Eigen::Matrix4d;
 
 using namespace std;
 using namespace Eigen;
+#undef min
+#undef max
+#include <limits>
 
 std::string exeDir;
 
@@ -138,7 +152,7 @@ void CallPatchDaeFileDLL(
     const std::string &outFile,
     const std::vector<std::vector<std::pair<unsigned int, std::vector<unsigned int>>>> &allMaterialToIndices)
 {
-  std::string tempPath = "allmatinfo.txt";
+  std::string tempPath = getExeDir() + "allmatinfo.txt";
   SerializeAllMatToIndices(tempPath, allMaterialToIndices);
 
   HMODULE dll = LoadLibraryA("tinyxml2patcher.dll");
@@ -254,7 +268,7 @@ void SaveDaeFile(const std::string &path, const std::string &outName, const std:
     scene->mMaterials[fi] = new aiMaterial();
     float ambient[3] = {0.5f, 0.5f, 0.5f};
     scene->mMaterials[fi]->AddProperty(ambient, 3, AI_MATKEY_COLOR_AMBIENT);
-    std::string texName = outName + std::to_string(fi) + ".png";
+    std::string texName = outName + "#" + std::to_string(fi) + ".png";
     aiString texPath(texName.c_str());
     scene->mMaterials[fi]->AddProperty(&texPath, AI_MATKEY_TEXTURE_DIFFUSE(0));
   }
@@ -396,14 +410,21 @@ int main(int argc, char **argv)
   size_t pos = pathStr.find_last_of("\\/");
   exeDir = (pos == std::string::npos) ? "." : pathStr.substr(0, pos);
 
-  if(argc < 3)    // expecting both input and output
+  std::string root = "C:\\Users\\Blurro\\Downloads\\robloxexport\\robloxmesh";
+  std::string outName = "wawawa";
+  bool debug = false;
+  if (!debug)
   {
-    std::cerr << "usage: prog <input_path> <filename>\n";
-    return 1;
-  }
+    if(argc < 3)    // expecting both input and output
+    {
+      std::cerr << "usage: prog <input_path> <filename>\n";
+      system("pause");
+      return 1;
+    }
 
-  std::string root = argv[1];
-  std::string outName = argv[2];
+    root = argv[1];
+    outName = argv[2];
+  }
 
   // ---------------------------------------------------------
   // reference object-space and clip-space
@@ -411,16 +432,14 @@ int main(int argc, char **argv)
   double vertdist = 15.0;
   Matrix<double, 4, 4> ref_obj;
   ref_obj << vertdist, vertdist, vertdist, 1.0, vertdist, -vertdist, vertdist, 1.0, vertdist, vertdist, -vertdist, 1.0, -vertdist, vertdist, vertdist, 1.0;
+  
+  std::string fbxroot = root;
+  std::string root_dir = getExeDir() + "temp\\";
+  root = root_dir + ((root.find_last_of("/\\") == std::string::npos)
+                            ? root
+                            : root.substr(root.find_last_of("/\\") + 1));
 
   // load reference clip-space from referenceverts.bin
-  string root_dir = root;
-  {
-    size_t p1 = root_dir.find_last_of("/\\");
-    if(p1 != string::npos)
-      root_dir = root_dir.substr(0, p1 + 1);
-    else
-      root_dir = "";
-  }
   string ref_path = root_dir + "referenceverts.bin";
   ifstream rf(ref_path, ios::binary);
   if(!rf)
@@ -503,35 +522,82 @@ int main(int argc, char **argv)
   // ---------------------------------------------------------
   vector<Vector3d> allVerts;
 
-  // --- read all datablocks first
+ // --- read all datablocks first
   for(int i = 0;; ++i)
   {
     string dbpath = root_dir + "datablock" + to_string(i) + ".bin";
     ifstream f(dbpath, ios::binary);
     if(!f)
       break;
+
     float x = 0, y = 0, z = 0, w = 0;
+
+    // read vertex 0
     f.read(reinterpret_cast<char *>(&x), 4);
     f.read(reinterpret_cast<char *>(&y), 4);
     f.read(reinterpret_cast<char *>(&z), 4);
     f.read(reinterpret_cast<char *>(&w), 4);
+
+    Vector4d clip0;
+    clip0 << x, y, z, w;
+
+    Vector3d xyz0 = recover_xyz_vec(clip0, inv_mvp);
+    xyz0.array() -= vertdist;
+    allVerts.push_back(xyz0);
+
+    // condition
+    if(static_cast<int>(round(xyz0.x())) == 10 && xyz0.y() < -5.0)
+    {
+      // vertex index 8 = float index 48
+      f.seekg(48 * sizeof(float), ios::beg);
+
+      f.read(reinterpret_cast<char *>(&x), 4);
+      f.read(reinterpret_cast<char *>(&y), 4);
+      f.read(reinterpret_cast<char *>(&z), 4);
+      f.read(reinterpret_cast<char *>(&w), 4);
+
+      Vector4d clip8;
+      clip8 << x, y, z, w;
+
+      Vector3d xyz8 = recover_xyz_vec(clip8, inv_mvp);
+      xyz8.array() -= vertdist;
+      allVerts.push_back(xyz8);
+    }
+
     f.close();
-    Vector4d clip(x, y, z, w);
-    Vector3d xyz = recover_xyz_vec(clip, inv_mvp);
-    xyz.array() -= vertdist;
-    allVerts.push_back(xyz);
   }
 
-  int zAxisDist = 10; // default
+  // calc spacing between blocks on z axis where x=10 and y<-5
+  int zAxisDist = 0;
+  int maxZ = std::numeric_limits<int>::min();
+  int secondMaxZ = std::numeric_limits<int>::min();
+
   for(auto &v : allVerts)
   {
-    if(static_cast<int>(round(v.x())) == 0 && static_cast<int>(round(v.y())) == 0 && v.z() > 0.0)
+    if(static_cast<int>(round(v.x())) == 10 && static_cast<int>(round(v.y())) < -5)
     {
-      zAxisDist = static_cast<int>(round(v.z()));
-      cout << "found vertex z = " << zAxisDist << endl;
-      break;
+      int z = static_cast<int>(round(v.z()));
+
+      if(z > maxZ)
+      {
+        // previous max becomes candidate for secondMax if distinct
+        if(maxZ != std::numeric_limits<int>::min() && maxZ != z)
+          secondMaxZ = maxZ;
+        maxZ = z;
+      }
+      else if(z < maxZ && z > secondMaxZ)
+      {
+        secondMaxZ = z;
+      }
     }
   }
+  if(maxZ != std::numeric_limits<int>::min() && secondMaxZ != std::numeric_limits<int>::min())
+  {
+    zAxisDist = maxZ - secondMaxZ;
+  }
+
+  // TEST WITH ZAXISDIST 0
+  //zAxisDist = 0;
 
 // --- process bonePos: only y > -5 and z < 0
   vector<Vector3d> bonePos;
@@ -545,52 +611,82 @@ int main(int argc, char **argv)
   for(size_t i = 0; i < bonePos.size(); ++i)
     bonePos[i].z() += static_cast<double>(i + 1) * zAxisDist;
 
-  // --- process nameData: only y < -5 and hardcoded z bucket widths of 10
+  //std::cout << "[debug] bonePos count after filter = " << bonePos.size() << "\n";
+  //for(size_t i = 0; i < bonePos.size(); ++i) std::cout << "[debug] pre-sort " << i << " x=" << bonePos[i].x() << " y=" << bonePos[i].y() << " z=" << bonePos[i].z() << "\n";
+
+// --- process nameData: only y < -5, bucketed by exact rounded z descending, char from X value
   vector<Vector3d> verts;
   for(auto &v : allVerts)
+  {
     if(v.y() < -5.0)
       verts.push_back(v);
+  }
+  auto round1 = [](double v) { return round(v * 10.0) / 10.0; };
   const string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_<";
   vector<string> strings;
-  double z_top = 5.0;
+
   int bucketIndex = 0;
+
   while(true)
   {
+    int bucketZ = -zAxisDist * bucketIndex;    // go down along z
     vector<Vector3d> bucket;
-
     for(auto &v : verts)
-      if(v.z() <= z_top && v.z() > z_top - 10.0)
+    {
+      int rz = static_cast<int>(round(v.z()));
+      if(rz == bucketZ)
         bucket.push_back(v);
+    }
 
-    if(bucket.empty())
+   if(bucket.empty())
+    {
+      if(bucketIndex == 0)
+      {
+        bucketIndex++;
+        continue;
+      }
       break;
+    }
 
     sort(bucket.begin(), bucket.end(),
-         [](const Vector3d &a, const Vector3d &b) { return a.y() > b.y(); });
+         [&](const Vector3d &a, const Vector3d &b) { return round1(a.y()) > round1(b.y()); });
 
     string s;
-
-    for(size_t i = 0; i < bucket.size(); ++i)
+    for(size_t i = 0; i + 1 < bucket.size(); ++i)
     {
-      double z_offset = bucket[i].z() + 3.0 + bucketIndex * 10.0;
-      int idx = static_cast<int>(round(z_offset * 10.0));
+      if(round1(bucket[i].y()) != round1(bucket[i + 1].y()))
+        continue;
+
+      const Vector3d &a = bucket[i];
+      const Vector3d &b = bucket[i + 1];
+
+      const Vector3d &data = (round1(a.x()) == 10.0) ? b : a;
+      double x = round1(data.x());
+      int idx = static_cast<int>(round(x * 10.0));
 
       if(idx >= 0 && idx < (int)charset.size())
         s.push_back(charset[idx]);
+
+      ++i;    // skip paired vertex
     }
 
     strings.push_back(s);
-
-    z_top -= 10.0;
     bucketIndex++;
   }
 
   // --- parse strings into bone hierarchy
-  string modelName;
+  string modelName = "RobloxMesh";
   vector<Bone> bones;
 
   if(!strings.empty())
     modelName = strings[0];
+
+  bool replaceFile = true;
+  if(outName.empty())
+  {
+    outName = modelName;    // used in batch export path
+    replaceFile = false;
+  }
 
   for(size_t i = 1; i < strings.size(); ++i)
   {
@@ -857,6 +953,7 @@ int main(int argc, char **argv)
       f.orig = file_orig_indices[i];
       f.source_file = file_index;
       f.pos = unique[i].pos;
+      //f.byte_offset = file_orig_local_indices[i] * stride_in;
 
       if(local_attr_idx >= 0)
       {
@@ -894,7 +991,8 @@ int main(int argc, char **argv)
     return round(val * factor) / factor;
   };
 
-  remove("error.txt");
+  std::string errorPath = getExeDir() + "error.txt";
+  std::remove(errorPath.c_str());
 
   // ensure bucket0 exists
   if(groups.find(0) == groups.end())
@@ -939,48 +1037,140 @@ int main(int argc, char **argv)
         continue;
       }
 
-      vector<int> candidates = it->second;
+      vector<int> orig_candidates = it->second;
+      vector<int> candidates;
+
+      // precompute norm, uv, pos candidates using smallest tolerance tier first
+      int n_tol = normal_tols[0];
+      double uv_tol = uv_tols[0];
+      double xyz_tol = xyz_tols[0];
+
+      vector<int> norm_candidates, uv_candidates, pos_candidates;
+      for(int c : it->second)    // orig_candidates
+      {
+        auto &f = full[c];
+        bool norm_ok =
+            abs(v0.normal[0] - f.normal[0]) <= n_tol && abs(v0.normal[1] - f.normal[1]) <= n_tol &&
+            abs(v0.normal[2] - f.normal[2]) <= n_tol && abs(v0.normal[3] - f.normal[3]) <= n_tol;
+        bool uv_ok = fabs(v0.uv.x() - f.uv.x()) <= uv_tol && fabs(v0.uv.y() - f.uv.y()) <= uv_tol;
+        bool pos_ok = fabs(v0.ogxyz.x() - f.ogxyz.x()) <= xyz_tol &&
+                      fabs(v0.ogxyz.y() - f.ogxyz.y()) <= xyz_tol &&
+                      fabs(v0.ogxyz.z() - f.ogxyz.z()) <= xyz_tol;
+
+        if(norm_ok)
+          norm_candidates.push_back(c);
+        if(uv_ok)
+          uv_candidates.push_back(c);
+        if(pos_ok)
+          pos_candidates.push_back(c);
+      }
+
+      vector<int> last_nonempty;
       bool matched = false;
 
-      for(size_t tier = 0; tier < normal_tols.size() && !matched; ++tier)
+      // 1. norm only
+      if(!norm_candidates.empty())
       {
-        int n_tol = normal_tols[tier];
-        double uv_tol = uv_tols[tier];
-        double xyz_tol = xyz_tols[tier];
-
-        vector<int> next_candidates;
-        next_candidates.reserve(candidates.size());
-
-        for(int c : candidates)
+        last_nonempty = norm_candidates;
+        if(norm_candidates.size() == 1)
         {
-          auto &f = full[c];
-          bool norm_ok =
-              abs(v0.normal[0] - f.normal[0]) <= n_tol && abs(v0.normal[1] - f.normal[1]) <= n_tol &&
-              abs(v0.normal[2] - f.normal[2]) <= n_tol && abs(v0.normal[3] - f.normal[3]) <= n_tol;
-          bool uv_ok = fabs(v0.uv.x() - f.uv.x()) <= uv_tol && fabs(v0.uv.y() - f.uv.y()) <= uv_tol;
-          bool xyz_ok = fabs(v0.ogxyz.x() - f.ogxyz.x()) <= xyz_tol &&
-                        fabs(v0.ogxyz.y() - f.ogxyz.y()) <= xyz_tol &&
-                        fabs(v0.ogxyz.z() - f.ogxyz.z()) <= xyz_tol;
-          if(norm_ok && uv_ok && xyz_ok)
-            next_candidates.push_back(c);
-        }
-
-        if(next_candidates.size() == 1)
-        {
-          candidates = next_candidates;
+          candidates = norm_candidates;
           matched = true;
-        }
-        else if(!next_candidates.empty())
-        {
-          candidates = next_candidates;
         }
       }
 
-      if(candidates.size() != 1)
+      // 2. uv only
+      if(!matched && !uv_candidates.empty())
       {
-        std::ofstream ferr("error.txt", std::ios::app);
+        last_nonempty = uv_candidates;
+        if(uv_candidates.size() == 1)
+        {
+          candidates = uv_candidates;
+          matched = true;
+        }
+      }
+
+      // 3. norm AND uv
+      if(!matched)
+      {
+        vector<int> tmp;
+        for(int c : norm_candidates)
+          if(find(uv_candidates.begin(), uv_candidates.end(), c) != uv_candidates.end())
+            tmp.push_back(c);
+        if(!tmp.empty())
+          last_nonempty = tmp;
+        if(tmp.size() == 1)
+        {
+          candidates = tmp;
+          matched = true;
+        }
+      }
+
+      // 4. norm AND pos
+      if(!matched)
+      {
+        vector<int> tmp;
+        for(int c : norm_candidates)
+          if(find(pos_candidates.begin(), pos_candidates.end(), c) != pos_candidates.end())
+            tmp.push_back(c);
+        if(!tmp.empty())
+          last_nonempty = tmp;
+        if(tmp.size() == 1)
+        {
+          candidates = tmp;
+          matched = true;
+        }
+      }
+
+      // 5. uv AND pos
+      if(!matched)
+      {
+        vector<int> tmp;
+        for(int c : uv_candidates)
+          if(find(pos_candidates.begin(), pos_candidates.end(), c) != pos_candidates.end())
+            tmp.push_back(c);
+        if(!tmp.empty())
+          last_nonempty = tmp;
+        if(tmp.size() == 1)
+        {
+          candidates = tmp;
+          matched = true;
+        }
+      }
+
+      // 6. norm AND uv AND pos
+      if(!matched)
+      {
+        vector<int> tmp;
+        for(int c : norm_candidates)
+          if(find(uv_candidates.begin(), uv_candidates.end(), c) != uv_candidates.end() &&
+             find(pos_candidates.begin(), pos_candidates.end(), c) != pos_candidates.end())
+            tmp.push_back(c);
+        if(!tmp.empty())
+          last_nonempty = tmp;
+        if(tmp.size() == 1)
+        {
+          candidates = tmp;
+          matched = true;
+        }
+      }
+
+      // fallback hopefully never happens
+      if(!matched)
+        candidates = last_nonempty;
+
+   if(candidates.size() != 1)
+      {
+        std::ofstream ferr(errorPath, std::ios::app);
         ferr << "ERROR: v0 id=" << i << " narrowing failed. " << candidates.size()
              << " candidates remain\n";
+        ferr << "  v0: source_file=" << v0.source_file << " pos=(" << v0.pos.x() << "," << v0.pos.y() << "," << v0.pos.z() << ")\n";
+        for(size_t ci = 0; ci < candidates.size(); ++ci)
+        {
+          auto &c = full[candidates[ci]];
+          ferr << "    candidate " << ci << ": source_file=" << c.source_file << " pos=(" << c.pos.x() << "," << c.pos.y()
+               << "," << c.pos.z() << ")\n";
+        }
         ferr.close();
         bone.weights.push_back(0.0f);
         continue;
@@ -988,7 +1178,7 @@ int main(int argc, char **argv)
 
       int best = candidates[0];
       double dx = full[best].pos.x() - v0.pos.x();
-      dx = (dx < 0.008 ? 0.008 : (dx > 7.323 ? 7.323 : dx)); // 7.331 LEET but 0.008 margin lol
+      dx = (dx < 0.008 ? 0.008 : (dx > 7.323 ? 7.323 : dx)); // 7.331 LEET but 0.008 margin lol (so floating point noise resulting in 0.001 or 0.999 is clamped to 0.0 or 1.0)
       double pct = (dx - 0.008) / (7.323 - 0.008);
       bone.weights.push_back((float)round_dp(pct, 3));
     }
@@ -1056,9 +1246,29 @@ int main(int argc, char **argv)
     meshMatVec[matIdx].second.clear();
   }
 
+  // --- determine output name avoiding overwrites ---
+  std::string pathDir = fbxroot;
+  size_t posss = pathDir.find_last_of("/\\");
+  if(posss != std::string::npos)
+    pathDir = pathDir.substr(0, posss + 1);    // include the slash
+  if(!replaceFile)
+  {
+    std::string baseName = outName;
+    int suffix = 1;
+    while(true)
+    {
+      std::ifstream f(pathDir + outName + ".fbx");
+      if(!f.good())
+        break;    // file doesn't exist, use this name
+
+      outName = baseName + "_" + std::to_string(suffix);
+      suffix++;
+    }
+  }
   // write texeids.txt
   {
-    std::ofstream fout("texeids.txt");
+    std::ofstream fout(getExeDir() + "texeids.txt");
+    fout << outName << "\n";    // first line = outName
     for(size_t m = 0; m < meshMatVec.size(); ++m)
       fout << meshMatVec[m].first << "\n";
   }
@@ -1106,6 +1316,11 @@ int main(int argc, char **argv)
   }
 
   // normalize bone weights
+  if(bones.size() < 1)
+  {
+    cerr << "no bones found\n";
+  }
+  else
   {
     size_t nVerts = full.size();
     size_t nBones = bones.size();
@@ -1146,6 +1361,7 @@ int main(int argc, char **argv)
         // add missing weight to largest bone, prioritize bone 0 if all zeros
         double deficit = 1.0 - sum;
         size_t best = 0;
+
         double bestVal = bones[0].weights[vi];
         for(size_t bi = 1; bi < nBones; ++bi)
           if(bones[bi].weights[vi] > bestVal)
@@ -1193,6 +1409,6 @@ int main(int argc, char **argv)
   }
 
   // save dae
-  SaveDaeFile(root, outName, modelName, vertsPos, vertsUV, vertsNormal, face_indices, bones, (int)meshMatVec.size(), allMaterialToIndices);
+  SaveDaeFile(fbxroot, outName, modelName, vertsPos, vertsUV, vertsNormal, face_indices, bones, (int)meshMatVec.size(), allMaterialToIndices);
   return 0;
 }

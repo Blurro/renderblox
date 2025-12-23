@@ -39,6 +39,11 @@
 #include "Windows/MainWindow.h"
 #include "version.h"
 
+#include <QTcpServer>
+#include <QTcpSocket>
+#include "Windows/EventBrowser.h"
+#include "Windows/Dialogs/LiveCapture.h"
+
 #if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
 
 #include <QOperatingSystemVersion>
@@ -185,14 +190,15 @@ void hideOption(QCommandLineOption &opt)
 #include <iostream>
 #endif
 
+bool exportInProgress = false;
+bool waitToPause = false;
+bool lastExportFailed = false;
+
 int main(int argc, char *argv[])
 {
   // blurro making console open for debugging
 //#ifdef _WIN32
-  //   AllocConsole();
-  //  freopen("CONOUT$", "w", stdout);
-  //  freopen("CONOUT$", "w", stderr);
-//  std::cout << "Console opened!" << std::endl;
+  //  AllocConsole(); freopen("CONOUT$", "w", stdout); freopen("CONOUT$", "w", stderr); std::cout << "Console opened!" << std::endl;
 //#endif
 
   // call this as the very first thing - no-op on other platforms, but on linux it means
@@ -569,23 +575,160 @@ int main(int argc, char *argv[])
     else
       Analytics::Load();
 
-    bool isDarkTheme = IsDarkTheme();
-
+    // -------------- force dark theme
+    config.UIStyle = lit("RDDark");
     bool styleSet = config.SetStyle();
-
-    // unrecognised style, or empty (none set), choose a default
-    if(!styleSet)
-    {
-      config.UIStyle = isDarkTheme ? lit("RDDark") : lit("RDLight");
-
-      config.SetStyle();
-    }
 
     config.SetupFormatting();
 
     Resources::Initialise();
 
     GUIInvoke::init();
+
+    // --------------- new localserver stuff
+    // find EventBrowser first
+    auto waitForEventBrowser = [](std::function<void(EventBrowser *)> cb) {
+      QTimer *t = new QTimer(qApp);
+      QObject::connect(t, &QTimer::timeout, [t, cb]() {
+        for(QWidget *w : qApp->allWidgets())
+          if(auto eb = qobject_cast<EventBrowser *>(w))
+          {
+            t->stop();
+            t->deleteLater();
+            cb(eb);
+            return;
+          }
+        std::cout << "retry: EventBrowser not found" << std::endl;
+      });
+      t->start(100);
+    };
+    waitForEventBrowser([](EventBrowser *eb) { std::cout << "ready to use EventBrowser" << std::endl; });
+    // create server
+    QTcpServer *server = new QTcpServer(&application);
+    QObject::connect(server, &QTcpServer::newConnection, [server, waitForEventBrowser]() {
+      QTcpSocket *socket = server->nextPendingConnection();
+      //std::cout << "New connection from client" << std::endl;
+
+      QObject::connect(socket, &QTcpSocket::readyRead, [socket, waitForEventBrowser]() {
+        QByteArray req = socket->readAll();
+        //std::cout << "Received request: " << req.toStdString() << std::endl;
+
+        if(req.contains("CAPTURE"))
+        {
+          if(exportInProgress)
+          {
+            std::cout << "Export in progress, sending BUSY" << std::endl;
+            QByteArray response = "HTTP/1.1 200 OK\r\nContent-Length: 4\r\n\r\nBUSY";
+            socket->write(response);
+            socket->flush();
+            socket->waitForBytesWritten();
+            return;
+          }
+
+          int captureTotal = 0;
+          int captureNow = 0;
+          int captureMeshCount = 0;
+
+          int firstHash = req.indexOf('#');
+          int secondHash = firstHash != -1 ? req.indexOf('#', firstHash + 1) : -1;
+          int thirdHash = secondHash != -1 ? req.indexOf('#', secondHash + 1) : -1;
+
+          if(firstHash != -1)
+          {
+            bool ok1 = false;
+            captureTotal =
+                req.mid(firstHash + 1, secondHash != -1 ? secondHash - firstHash - 1 : -1).toInt(&ok1);
+            if(!ok1)
+              captureTotal = 0;
+          }
+
+          if(secondHash != -1)
+          {
+            bool ok2 = false;
+            captureNow =
+                req.mid(secondHash + 1, thirdHash != -1 ? thirdHash - secondHash - 1 : -1).toInt(&ok2);
+            if(!ok2)
+              captureNow = 0;
+          }
+
+          if(thirdHash != -1)
+          {
+            bool ok3 = false;
+            captureMeshCount = req.mid(thirdHash + 1).toInt(&ok3);
+            if(!ok3)
+              captureMeshCount = 0;
+          }
+
+          if((captureTotal == 0 || waitToPause || lastExportFailed) && captureNow != 1)
+          {
+            QByteArray response = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK";
+            if(waitToPause)
+            {
+              std::cout << "sending PAUSE";
+              response = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nPAUSE";
+              if(lastExportFailed)
+              {
+                std::cout << "REDO";
+                response = "HTTP/1.1 200 OK\r\nContent-Length: 9\r\n\r\nPAUSEREDO";
+              }
+              std::cout << std::endl;
+              waitToPause = false;
+            }
+            else if(lastExportFailed)
+            {
+              std::cout << "failed, sending REDO" << std::endl;
+              response = "HTTP/1.1 200 OK\r\nContent-Length: 4\r\n\r\nREDO";
+              lastExportFailed = false;
+            }
+            else
+            {
+              std::cout << "captureTotal is 0, sending OK" << std::endl;
+            }
+            socket->write(response);
+            socket->flush();
+            socket->waitForBytesWritten();
+            socket->disconnectFromHost();
+            return;
+          }
+          else if(captureNow == 1) // clean slate
+          {
+            waitToPause = false;
+            lastExportFailed = false;
+          }
+
+          exportInProgress = true;
+
+          waitForEventBrowser([captureTotal, captureNow, captureMeshCount, socket](EventBrowser *eb) {
+            eb->TriggerCaptureFromExternal(captureTotal, captureNow, captureMeshCount, socket);
+          });
+        }
+        else
+        {
+          std::cout << "Not a capture request, ignoring" << std::endl;
+        }
+      });
+    });
+    quint16 port = 44444;
+    while(port <= 44452)
+    {
+      if(server->listen(QHostAddress::LocalHost, port))
+      {
+        std::cout << "Local HTTP server listening on 127.0.0.1:" << port << std::endl;
+        break;
+      }
+      else
+      {
+        std::cout << "Port " << port << " unavailable: " << server->errorString().toStdString() << std::endl;
+        ++port;
+      }
+    }
+    if(!server->isListening())
+    {
+      std::cout << "Failed to bind any port in range 44444-44452" << std::endl;
+    }
+
+
+
 
     {
       GlobalEnvironment env;

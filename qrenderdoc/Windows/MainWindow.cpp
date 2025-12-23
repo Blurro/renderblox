@@ -575,10 +575,7 @@ MainWindow::~MainWindow()
 QString MainWindow::GetLayoutPath(int layout)
 {
   QString filename = lit("DefaultLayout.config");
-
-  if(layout > 0)
-    filename = lit("Layout%1.config").arg(layout);
-
+  //---------- force layout - blurro
   return ConfigFilePath(filename);
 }
 
@@ -1206,15 +1203,12 @@ void MainWindow::SetTitle(const QString &filename)
   if(m_Ctx.Replay().CurrentRemote().IsValid())
     prefix += tr("Remote: %1 - ").arg(m_Ctx.Replay().CurrentRemote().Name());
 
-  QString text = prefix + lit("RenderDoc ");
+  QString text = prefix + lit("RenderBlox ");
 
   if(RENDERDOC_STABLE_BUILD)
     text += lit(FULL_VERSION_STRING);
   else
-    text += tr("Roblox Build (%2 - %3)")
-                .arg(RENDERDOC_IsReleaseBuild() ? lit("Release") : lit("Development"))
-                .arg(lit(FULL_VERSION_STRING))
-                .arg(QString::fromLatin1(RENDERDOC_GetCommitHash()));
+    text += tr("V1.2");
 
   if(IsRunningAsAdmin())
     text += tr(" (Administrator)");

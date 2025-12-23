@@ -30,6 +30,14 @@
 #include "Widgets/Extended/RDHeaderView.h"
 #include "toolwindowmanager/ToolWindowManagerArea.h"
 #include "ui_ResourceInspector.h"
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QFont>
+#include <QStackedLayout>
+#include <QWidget>
+#include "Dialogs/LiveCapture.h"
+#include <iostream>
 
 static const int ResourceIdRole = Qt::UserRole;
 static const int FilterRole = Qt::UserRole + 1;
@@ -136,109 +144,100 @@ bool ResourceSorterModel::lessThan(const QModelIndex &source_left, const QModelI
 }
 
 ResourceInspector::ResourceInspector(ICaptureContext &ctx, QWidget *parent)
-    : QFrame(parent), ui(new Ui::ResourceInspector), m_Ctx(ctx)
+    : QFrame(parent), ui(nullptr), m_Ctx(ctx)
 {
-  ui->setupUi(this);
+    setWindowTitle(tr("Welcome Page"));
 
-  SetResourceNameDisplay(tr("Welcome to Blurro's RenderDoc fork for Roblox!"));
+    QWidget *base = new QWidget(this);
+    QVBoxLayout *content = new QVBoxLayout(base);
+    content->setSpacing(14);
+    content->setContentsMargins(30, 26, 30, 20);
 
-  ui->resetName->hide();
-  ui->resourceNameEdit->hide();
-  ui->renameResource->setEnabled(false);
+    QLabel *welcome = new QLabel(tr("Welcome to Blurro's RenderBlox project!"), base);
+    QFont headerFont = welcome->font();
+    headerFont.setPointSize(headerFont.pointSize() * 3);
+    headerFont.setBold(true);
+    welcome->setFont(headerFont);
+    welcome->setWordWrap(true);
 
-  ui->viewContents->hide();
+    QLabel *stepsHeader = new QLabel(tr("Export some avatars"), base);
+    QFont sectionFont = headerFont;
+    sectionFont.setPointSize(sectionFont.pointSize() / 2);
+    stepsHeader->setFont(sectionFont);
 
-  m_ResourceModel = new ResourceListItemModel(this, m_Ctx);
+    QLabel *stepsList = new QLabel(base);
+    QFont stepsFont = stepsList->font();
+    qreal dpiScale = stepsList->logicalDpiY() / 72.0;
+    if(dpiScale > 1.0)
+      dpiScale = 1.0;
+    stepsFont.setPointSizeF(stepsFont.pointSizeF() * 2.0 * dpiScale);
+    stepsList->setFont(stepsFont);
+    stepsList->setWordWrap(false);
+    stepsList->setText(
+        tr("1. Hit 'Launch Application' above and click the 3 dots to the right of\n"
+           "    'Executable Path', find and choose the Roblox Studio .exe\n\n"
+           "2. Launch Studio and open AvatarExporter.rbxl. Drag and drop all\n"
+           "    avatar .rbxm files you intend to convert, then hit F5 to play\n\n"
+           "3. Either enter a username into the left to pull from the API, or click\n"
+           "    the blue button on the right to convert all imported to FBX!\n\n"
+           "Note: Make sure to stay on 'client mode' whilst exporting.\nEnjoy!"));
 
-  m_FilterModel = new ResourceSorterModel(this);
-  m_FilterModel->setSourceModel(m_ResourceModel);
-  m_FilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-  m_FilterModel->setFilterRole(FilterRole);
-  m_FilterModel->sort(0);
-  m_FilterModel->collator()->setNumericMode(true);
-  m_FilterModel->collator()->setCaseSensitivity(Qt::CaseInsensitive);
+    QFontMetrics fm(stepsFont);
+    int maxWidth = 0;
+    QStringList lines = stepsList->text().split(QLatin1Char('\n'));
+    for(const QString &line : lines)
+      maxWidth = qMax(maxWidth, fm.width(line));
+    // let QLabel calculate its proper height via sizeHint
+    QSize properSize = stepsList->sizeHint();
+    stepsList->setFixedSize(maxWidth + qRound(8 * dpiScale),
+                            properSize.height() + qRound(4 * dpiScale));
 
-  ui->sortType->addItems(
-      {tr("Sort alphabetically"), tr("Sort by creation time"), tr("Sort by recently viewed")});
-  ui->sortType->adjustSize();
+    QPushButton *manualCapture = new QPushButton(tr("Take Manual Capture"), base);
 
-  ui->resourceList->setModel(m_FilterModel);
+    content->addWidget(welcome);
+    content->addSpacing(4);
+    content->addWidget(stepsHeader);
+    content->addWidget(stepsList);
+    content->addStretch();
+    content->addWidget(manualCapture, 0, Qt::AlignLeft);
 
-  m_ChunksModel = new StructuredDataItemModel(this);
-  ui->initChunks->setModel(m_ChunksModel);
-  m_ChunksModel->setColumns({tr("Parameter"), tr("Value")},
-                            {StructuredDataItemModel::Name, StructuredDataItemModel::Value});
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->addWidget(base);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    setLayout(layout);
 
-  m_delegate = new RichTextViewDelegate(ui->initChunks);
-  ui->initChunks->setItemDelegate(m_delegate);
+    image = new OverlayImageLabel(this);
+    image->setSourcePixmap(QPixmap(QStringLiteral(":/blurro.png")));
+    image->setAttribute(Qt::WA_TransparentForMouseEvents);
+    image->lower();    // behind everything
+    // ---- background filler ----
+    bg = new QFrame(this);    // assign to the member variable
+    bg->setStyleSheet(QStringLiteral("background-color: rgb(12,12,12);"));
+    bg->show();
+    bg->lower();
 
-  ui->initChunks->header()->resizeSection(0, 200);
+    QObject::connect(manualCapture, &QPushButton::clicked, this, []() {
+        LiveCapture *lc = nullptr;
+        for(QWidget *w : qApp->allWidgets())
+        if((lc = qobject_cast<LiveCapture *>(w)))
+            break;
 
-  ui->initChunks->setFont(Formatter::PreferredFont());
-  ui->relatedResources->setFont(Formatter::PreferredFont());
-  ui->resourceUsage->setFont(Formatter::PreferredFont());
+        if(lc)
+        {
+        // call with lambda
+        GUIInvoke::call(lc, [lc]() { lc->TriggerCaptureFromExternal(); });
+        }
+    });
+}
 
-  {
-    RDHeaderView *header = new RDHeaderView(Qt::Horizontal, this);
-    ui->relatedResources->setHeader(header);
-
-    ui->relatedResources->setColumns({tr("Type"), tr("Resource")});
-    header->setColumnStretchHints({-1, 1});
-  }
-
-  {
-    RDHeaderView *header = new RDHeaderView(Qt::Horizontal, this);
-    ui->resourceUsage->setHeader(header);
-
-    ui->resourceUsage->setColumns({tr("EID"), tr("Usage")});
-    header->setColumnStretchHints({-1, 1});
-  }
-
-  QObject::connect(ui->resourceList, &QListView::activated, this,
-                   &ResourceInspector::resource_doubleClicked);
-  QObject::connect(ui->relatedResources, &QTreeView::activated, this,
-                   &ResourceInspector::resource_doubleClicked);
-
-  ui->dockarea->addToolWindow(ui->resourceListWidget, ToolWindowManager::EmptySpace);
-  ui->dockarea->setToolWindowProperties(ui->resourceListWidget, ToolWindowManager::HideCloseButton);
-
-  ui->dockarea->addToolWindow(
-      ui->relatedResources,
-      ToolWindowManager::AreaReference(ToolWindowManager::LeftOf,
-                                       ui->dockarea->areaOf(ui->resourceListWidget), 0.75f));
-  ui->dockarea->setToolWindowProperties(ui->relatedResources, ToolWindowManager::HideCloseButton);
-
-  ui->dockarea->addToolWindow(ui->initChunks, ToolWindowManager::AreaReference(
-                                                  ToolWindowManager::BottomOf,
-                                                  ui->dockarea->areaOf(ui->relatedResources), 0.5f));
-  ui->dockarea->setToolWindowProperties(ui->initChunks, ToolWindowManager::HideCloseButton);
-
-  ui->dockarea->addToolWindow(
-      ui->resourceUsage,
-      ToolWindowManager::AreaReference(ToolWindowManager::RightOf,
-                                       ui->dockarea->areaOf(ui->relatedResources), 0.5f));
-  ui->dockarea->setToolWindowProperties(ui->resourceUsage, ToolWindowManager::HideCloseButton);
-
-  ui->dockarea->setAllowFloatingWindow(false);
-
-  ui->relatedResources->setWindowTitle(tr("Related Resources"));
-  ui->initChunks->setWindowTitle(tr("Resource Initialisation Parameters"));
-  ui->resourceUsage->setWindowTitle(tr("Usage in Frame"));
-  ui->resourceListWidget->setWindowTitle(tr("Resource List"));
-
-  QVBoxLayout *vertical = new QVBoxLayout(this);
-
-  vertical->setSpacing(3);
-  vertical->setContentsMargins(3, 3, 3, 3);
-
-  vertical->addWidget(ui->titleWidget);
-  vertical->addWidget(ui->dockarea);
-
-  ui->resourceListFilter->setPlaceholderText(tr("Filter..."));
-
-  Inspect(ResourceId());
-
-  m_Ctx.AddCaptureViewer(this);
+void ResourceInspector::resizeEvent(QResizeEvent *e)
+{
+  QFrame::resizeEvent(e);
+  if(bg)
+    bg->setGeometry(rect());
+  if(image)
+    image->updatePixmap();
 }
 
 ResourceInspector::~ResourceInspector()
