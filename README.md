@@ -14,6 +14,7 @@ This project follows after the Mario Kart Arcade GP DX exporter tool I created, 
 3. Load AvatarExporter.rbxl and press F5 to play
 4. Enter any username, or convert all imported models
 5. Choose a location and let it run!
+6. Extra note, set scale to 100 when opening FBX in Blender
 
 **Demonstration**
 
