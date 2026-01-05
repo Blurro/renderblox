@@ -1308,11 +1308,48 @@ int main(int argc, char **argv)
   vertsUV.reserve(full.size());
   vertsNormal.reserve(full.size());
 
-  for(const auto &v : full)
+  // compute corrected normals
+  vector<Vector3d> accumN(full.size(), Vector3d(0, 0, 0));
+  for(const auto &m : meshMatVec)
   {
+    const auto &idx = m.second;
+
+    for(size_t i = 0; i + 2 < idx.size(); i += 3)
+    {
+      unsigned int i0 = idx[i + 0];
+      unsigned int i1 = idx[i + 1];
+      unsigned int i2 = idx[i + 2];
+
+      const Vector3d &p0 = full[i0].pos;
+      const Vector3d &p1 = full[i1].pos;
+      const Vector3d &p2 = full[i2].pos;
+
+      Vector3d fn = (p1 - p0).cross(p2 - p0);
+
+      if(fn.squaredNorm() > 1e-20)
+        fn.normalize();
+
+      accumN[i0] += fn;
+      accumN[i1] += fn;
+      accumN[i2] += fn;
+    }
+  }
+
+  for(size_t i = 0; i < full.size(); ++i)
+  {
+    const auto &v = full[i];
+
     vertsPos.push_back(v.pos);
     vertsUV.push_back(v.uv);
-    vertsNormal.push_back(v.normal);
+
+    Vector3d n = accumN[i];
+    if(n.squaredNorm() < 1e-20)
+      n = Vector3d(0, 0, 1);
+    else
+      n.normalize();
+
+    vertsNormal.emplace_back((int)std::round(n.x() * 127.0), (int)std::round(n.y() * 127.0),
+                             (int)std::round(n.z() * 127.0), 0);
   }
 
   // normalize bone weights
