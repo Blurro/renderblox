@@ -14,7 +14,7 @@ This project follows after the Mario Kart Arcade GP DX exporter tool I created, 
 3. Load AvatarExporter.rbxl and press F5 to play
 4. Enter any username, or convert all imported models
 5. Choose a location and let it run!
-6. Extra notes that may be helpful on the release page
+6. See extra notes that may be helpful on the release page
 
 If you have issues, please ensure stock RenderDoc is working first, otherwise come to me @blurro on Discord
 
@@ -24,4 +24,5 @@ https://github.com/user-attachments/assets/e82c1b6e-51a5-4b9b-9375-b861174159de
 
 ## Credits
 
+- **Thanks to [Baldurk](https://github.com/baldurk)** for creating RenderDoc and having this useful tool open-source!
 - **Thanks to [BlueManDan](https://github.com/Bluemandan)** and **[BlueMond](https://github.com/Bluemond)** for beta testing, suggesting features, and helping with general Roblox/Roblox Studio knowledge
