@@ -9,6 +9,7 @@ This project follows after the Mario Kart Arcade GP DX exporter tool I created, 
 
 ## Usage
 
+First click the Release on the right of this page and get the RenderBlox zip file, unzip that anywhere.
 1. Open RenderBlox.exe
 2. From the program, launch Roblox Studio
 3. Load AvatarExporter.rbxl and press F5 to play
@@ -16,7 +17,7 @@ This project follows after the Mario Kart Arcade GP DX exporter tool I created, 
 5. Choose a location and let it run!
 6. See extra notes that may be helpful on the release page
 
-If you have issues, please ensure stock RenderDoc is working first, otherwise come to me @blurro on Discord
+If you have issues, please ensure stock RenderDoc is working first, if the error is specific to this tool DM @blurro on Discord
 
 **Demonstration**
 
