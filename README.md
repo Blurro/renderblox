@@ -4,12 +4,12 @@ RenderDoc is a frame-capture based graphics debugger, currently available for Vu
 
 ## RenderBlox
 
+RenderBlox is a fork of RenderDoc that will capture the AvatarExporter Roblox scene, and create a fully built FBX of your Roblox Avatar from it.
+This project follows after the Mario Kart Arcade GP DX exporter tool I created, which has been huge for my learning to make this possible.
+
 # ---New roblox updates have added a feature breaking the tool, please try this fix:
 
 "If you go to StarterPlayer in the Explorer, find the property AvatarJointUpgrade and set it to Disabled, it stops the new physics constraints from overriding the Motor6D scripts." - thanks to the person that messaged me this!
-
-RenderBlox is a fork of RenderDoc that will capture the AvatarExporter Roblox scene, and create a fully built FBX of your Roblox Avatar from it.
-This project follows after the Mario Kart Arcade GP DX exporter tool I created, which has been huge for my learning to make this possible.
 
 ## Usage
 
